@@ -648,7 +648,7 @@ client1.on('connect', function(err) {
               //------------------------------------------Inverter----------------------------------------------
               /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
                    if(secEOL>=60 && CntOutEOL){
-                      fs.appendFileSync("C:/PULSE/COMET_LOGSS/mex_tul_eol_comet.log","tt="+Date.now()+",var=EOL"+",val="+CntOutEOL+"\n");
+                      fs.appendFileSync("C:/PULSE/COMET_LOGS/mex_tul_eol_comet.log","tt="+Date.now()+",var=EOL"+",val="+CntOutEOL+"\n");
                       secEOL=0;
                     }else{
                       secEOL++;
