@@ -37,23 +37,43 @@ try{
       CodertimeStop = 60, //NOTE: Timestop en segundos
       CoderWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       CoderflagRunning = false;
-  var Xrayct = null,
-      Xrayresults = null,
-      CntInXray = null,
-      CntOutXray = null,
-      Xrayactual = 0,
-      Xraytime = 0,
-      Xraysec = 0,
-      XrayflagStopped = false,
-      Xraystate = 0,
-      Xrayspeed = 0,
-      XrayspeedTemp = 0,
-      XrayflagPrint = 0,
-      XraysecStop = 0,
-      XrayONS = false,
-      XraytimeStop = 60, //NOTE: Timestop en segundos
-      XrayWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-      XrayflagRunning = false;
+      var Xrayct = null,
+          Xrayresults = null,
+          CntInXray = null,
+          CntOutXray = null,
+          Xrayactual = 0,
+          Xraytime = 0,
+          Xraysec = 0,
+          XrayflagStopped = false,
+          Xraystate = 0,
+          Xrayspeed = 0,
+          XrayspeedTemp = 0,
+          XrayflagPrint = 0,
+          XraysecStop = 0,
+          XraydeltaRejected = null,
+          XrayONS = false,
+          XraytimeStop = 60, //NOTE: Timestop
+          XrayWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+          XrayflagRunning = false,
+          XrayRejectFlag = false,
+          XrayReject,
+          XrayVerify = (function(){
+            try{
+              XrayReject = fs.readFileSync('XrayRejected.json')
+              if(XrayReject.toString().indexOf('}') > 0 && XrayReject.toString().indexOf('{\"rejected\":') != -1){
+                XrayReject = JSON.parse(XrayReject)
+              }else{
+                throw 12121212
+              }
+            }catch(err){
+              if(err.code == 'ENOENT' || err == 12121212){
+                fs.writeFileSync('XrayRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+                XrayReject = {
+                  rejected : 0
+                }
+              }
+            }
+          })();
   var Tunnelct = null,
       Tunnelresults = null,
       CntInTunnel = null,
@@ -213,7 +233,9 @@ client1.on('connect', function(err) {
         client1.readHoldingRegisters(0, 16).then(function(resp) {
           CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5])
           CntOutFiller = joinWord(resp.register[6], resp.register[7])
-          CntInCoder = joinWord(resp.register[8], resp.register[9])
+          CntInCoder  = joinWord(resp.register[6], resp.register[7])
+          CntOutCoder = joinWord(resp.register[8], resp.register[9])
+          CntInXray = joinWord(resp.register[8], resp.register[9])
           CntOutXray = joinWord(resp.register[10], resp.register[11])
           //------------------------------------------Filler----------------------------------------------
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
@@ -276,7 +298,7 @@ client1.on('connect', function(err) {
                 }
           //------------------------------------------Filler----------------------------------------------
           //------------------------------------------Coder----------------------------------------------
-                Coderct = CntInCoder //NOTE: igualar al contador de salida
+                Coderct = CntOutCoder //NOTE: igualar al contador de salida
                 if (!CoderONS && Coderct) {
                   CoderspeedTemp = Coderct
                   Codersec = Date.now()
@@ -321,6 +343,7 @@ client1.on('connect', function(err) {
                 Coderresults = {
                   ST: Coderstate,
                   CPQI: CntInCoder,
+                  CPQO: CntOutCoder,
                   SP: Coderspeed
                 }
                 if (CoderflagPrint == 1) {
@@ -347,6 +370,8 @@ client1.on('connect', function(err) {
                     Xrayspeed = Xrayct - XrayspeedTemp
                     XrayspeedTemp = Xrayct
                     Xraysec = Date.now()
+                    XraydeltaRejected = null
+                    XrayRejectFlag = false
                     Xraytime = Date.now()
                   }
                   XraysecStop = 0
@@ -364,6 +389,14 @@ client1.on('connect', function(err) {
                     XrayspeedTemp = Xrayct
                     XrayflagStopped = true
                     XrayflagRunning = false
+                    if(CntInXray - CntOutXray - XrayReject.rejected != 0 && ! XrayRejectFlag){
+                      XraydeltaRejected = CntInXray - CntOutXray - XrayReject.rejected
+                      XrayReject.rejected = CntInXray - CntOutXray
+                      fs.writeFileSync('XrayRejected.json','{"rejected": ' + XrayReject.rejected + '}')
+                      XrayRejectFlag = true
+                    }else{
+                      XraydeltaRejected = null
+                    }
                     XrayflagPrint = 1
                   }
                 }
@@ -379,14 +412,16 @@ client1.on('connect', function(err) {
                 }
                 Xrayresults = {
                   ST: Xraystate,
-                  CPQO: CntOutXray,
+                  CPQI : CntInXray,
+                  CPQO : CntOutXray,
+                  CPQR : XraydeltaRejected,
                   SP: Xrayspeed
                 }
                 if (XrayflagPrint == 1) {
                   for (var key in Xrayresults) {
                     if( Xrayresults[key] != null && ! isNaN(Xrayresults[key]) )
                     //NOTE: Cambiar path
-                    fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Xray_comet.log', 'tt=' + Xraytime + ',var=' + key + ',val=' + Xrayresults[key] + '\n')
+                    fs.appendFileSync('C:/PULSE/L13_LOGS/mex_pcl_Xray_L13.log', 'tt=' + Xraytime + ',var=' + key + ',val=' + Xrayresults[key] + '\n')
                   }
                   XrayflagPrint = 0
                   XraysecStop = 0
@@ -408,6 +443,7 @@ client1.on('connect', function(err) {
       setInterval(function(){
           client2.readHoldingRegisters(0, 16).then(function(resp) {
             CntOutTunnel =  joinWord(resp.register[0], resp.register[1])
+            CntInTunnel = joinWord(resp.register[10], resp.register[11])
             //------------------------------------------Tunnel----------------------------------------------
                   Tunnelct = CntOutTunnel // NOTE: igualar al contador de salida
                   if (!TunnelONS && Tunnelct) {
@@ -453,6 +489,7 @@ client1.on('connect', function(err) {
                   }
                   Tunnelresults = {
                     ST: Tunnelstate,
+                    CPQI: CntInTunnel,
                     CPQO: CntOutTunnel,
                     SP: Tunnelspeed
                   }
@@ -485,6 +522,8 @@ client1.on('connect', function(err) {
               CntInWrapper =  joinWord(resp.register[0], resp.register[1])
               CntBoxInWrapper = joinWord(resp.register[4], resp.register[5])
               CntInInverter = joinWord(resp.register[2], resp.register[3])
+              CntOutInverter = joinWord(resp.register[4], resp.register[5])
+              CntOutWrapper = joinWord(resp.register[6], resp.register[7])
               CntOutEOL = joinWord(resp.register[6], resp.register[7])
               //------------------------------------------Wrapper----------------------------------------------
                     Wrapperct = CntOutWrapper // NOTE: igualar al contador de salida
@@ -533,6 +572,7 @@ client1.on('connect', function(err) {
                       ST: Wrapperstate,
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
+                      CPQO: CntOutWrapper,
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -592,6 +632,7 @@ client1.on('connect', function(err) {
                     Inverterresults = {
                       ST: Inverterstate,
                       CPQI: CntInInverter,
+                      CPQO: CntOutInverter,
                       SP: Inverterspeed
                     }
                     if (InverterflagPrint == 1) {
