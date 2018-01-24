@@ -421,7 +421,7 @@ client1.on('connect', function(err) {
                   for (var key in Xrayresults) {
                     if( Xrayresults[key] != null && ! isNaN(Xrayresults[key]) )
                     //NOTE: Cambiar path
-                    fs.appendFileSync('C:/PULSE/L13_LOGS/mex_pcl_Xray_L13.log', 'tt=' + Xraytime + ',var=' + key + ',val=' + Xrayresults[key] + '\n')
+                    fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Xray_comet.log', 'tt=' + Xraytime + ',var=' + key + ',val=' + Xrayresults[key] + '\n')
                   }
                   XrayflagPrint = 0
                   XraysecStop = 0
