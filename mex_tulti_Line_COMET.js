@@ -282,7 +282,7 @@ client1.on('connect', function(err) {
                 }
                 Fillerresults = {
                   ST: Fillerstate,
-                  CPQI: CntInFiller,
+                  CPQI: CntOutFiller,//CntInFiller,
                   CPQO: CntOutFiller,
                   SP: Fillerspeed
                 }
@@ -489,7 +489,7 @@ client1.on('connect', function(err) {
                   }
                   Tunnelresults = {
                     ST: Tunnelstate,
-                    CPQI: CntInTunnel,
+                    CPQI: CntOutXray,//CntInTunnel,
                     CPQO: CntOutTunnel,
                     SP: Tunnelspeed
                   }
