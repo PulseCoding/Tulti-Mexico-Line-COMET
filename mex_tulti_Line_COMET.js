@@ -17,6 +17,7 @@ try{
       FillerflagPrint = 0,
       FillersecStop = 0,
       FillerONS = false,
+      FillerdeltaRejected = null,
       FillertimeStop = 60, //NOTE: Timestop en segundos
       FillerWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       FillerflagRunning = false,
@@ -53,6 +54,7 @@ try{
       CoderflagPrint = 0,
       CodersecStop = 0,
       CoderONS = false,
+      CoderdeltaRejected = null,
       CodertimeStop = 60, //NOTE: Timestop en segundos
       CoderWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       CoderflagRunning = false,
@@ -126,6 +128,7 @@ try{
       TunnelflagPrint = 0,
       TunnelsecStop = 0,
       TunnelONS = false,
+      TunneldeltaRejected = null,
       TunneltimeStop = 60, //NOTE: Timestop en segundos
       TunnelWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       TunnelflagRunning = false,
@@ -162,6 +165,7 @@ try{
       WrapperflagPrint = 0,
       WrappersecStop = 0,
       WrapperONS = false,
+      WrapperdeltaRejected = null,
       WrappertimeStop = 60, //NOTE: Timestop en segundos
       WrapperWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       WrapperflagRunning = false,
@@ -199,6 +203,7 @@ try{
       InverterflagPrint = 0,
       InvertersecStop = 0,
       InverterONS = false,
+      InverterdeltaRejected = null,
       InvertertimeStop = 60, //NOTE: Timestop en segundos
       InverterWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       InverterflagRunning = false,
