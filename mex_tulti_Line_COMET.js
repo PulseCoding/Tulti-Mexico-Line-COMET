@@ -19,7 +19,26 @@ try{
       FillerONS = false,
       FillertimeStop = 60, //NOTE: Timestop en segundos
       FillerWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-      FillerflagRunning = false;
+      FillerflagRunning = false,
+      FillerRejectFlag = false,
+      FillerReject,
+      FillerVerify = (function(){
+            try{
+              FillerReject = fs.readFileSync('FillerRejected.json')
+              if(FillerReject.toString().indexOf('}') > 0 && FillerReject.toString().indexOf('{\"rejected\":') != -1){
+                FillerReject = JSON.parse(FillerReject)
+              }else{
+                throw 12121212
+              }
+            }catch(err){
+              if(err.code == 'ENOENT' || err == 12121212){
+                fs.writeFileSync('FillerRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+                FillerReject = {
+                  rejected : 0
+                }                 
+              }
+            }
+          })();
   var Coderct = null,
       Coderresults = null,
       CntInCoder = null,
@@ -36,7 +55,26 @@ try{
       CoderONS = false,
       CodertimeStop = 60, //NOTE: Timestop en segundos
       CoderWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-      CoderflagRunning = false;
+      CoderflagRunning = false,
+      CoderRejectFlag = false,
+      CoderReject,
+      CoderVerify = (function(){
+            try{
+              CoderReject = fs.readFileSync('CoderRejected.json')
+              if(CoderReject.toString().indexOf('}') > 0 && CoderReject.toString().indexOf('{\"rejected\":') != -1){
+                CoderReject = JSON.parse(CoderReject)
+              }else{
+                throw 12121212
+              }
+            }catch(err){
+              if(err.code == 'ENOENT' || err == 12121212){
+                fs.writeFileSync('CoderRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+                CoderReject = {
+                  rejected : 0
+                }
+              }
+            }
+          })();
       var Xrayct = null,
           Xrayresults = null,
           CntInXray = null,
@@ -90,7 +128,26 @@ try{
       TunnelONS = false,
       TunneltimeStop = 60, //NOTE: Timestop en segundos
       TunnelWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-      TunnelflagRunning = false;
+      TunnelflagRunning = false,
+      TunnelRejectFlag = false,
+      TunnelReject,
+      TunnelVerify = (function(){
+          try{
+            TunnelReject = fs.readFileSync('TunnelRejected.json')
+            if(TunnelReject.toString().indexOf('}') > 0 && TunnelReject.toString().indexOf('{\"rejected\":') != -1){
+              TunnelReject = JSON.parse(TunnelReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('TunnelRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              TunnelReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
   var Wrapperct = null,
       Wrapperresults = null,
       CntInWrapper = null,
@@ -108,7 +165,26 @@ try{
       WrappertimeStop = 60, //NOTE: Timestop en segundos
       WrapperWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       WrapperflagRunning = false,
-      CntBoxInWrapper = null;
+      CntBoxInWrapper = null,
+      WrapperRejectFlag = false,
+      WrapperReject,
+      WrapperVerify = (function(){
+          try{
+            WrapperReject = fs.readFileSync('WrapperRejected.json')
+            if(WrapperReject.toString().indexOf('}') > 0 && WrapperReject.toString().indexOf('{\"rejected\":') != -1){
+              WrapperReject = JSON.parse(WrapperReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('WrapperRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              WrapperReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
   var Inverterct = null,
       Inverterresults = null,
       CntInInverter = null,
@@ -125,7 +201,26 @@ try{
       InverterONS = false,
       InvertertimeStop = 60, //NOTE: Timestop en segundos
       InverterWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-      InverterflagRunning = false
+      InverterflagRunning = false,
+      InverterRejectFlag = false,
+      InverterReject,
+      InverterVerify = (function(){
+          try{
+            InverterReject = fs.readFileSync('InverterRejected.json')
+            if(InverterReject.toString().indexOf('}') > 0 && InverterReject.toString().indexOf('{\"rejected\":') != -1){
+              InverterReject = JSON.parse(InverterReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('InverterRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              InverterReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
   var CntOutEOL=null,
       secEOL=0;
   var publishConfig;
@@ -250,6 +345,8 @@ client1.on('connect', function(err) {
                     Fillerspeed = Fillerct - FillerspeedTemp
                     FillerspeedTemp = Fillerct
                     Fillersec = Date.now()
+                    FillerdeltaRejected = null
+                    FillerRejectFlag = false
                     Fillertime = Date.now()
                   }
                   FillersecStop = 0
@@ -267,6 +364,14 @@ client1.on('connect', function(err) {
                     FillerspeedTemp = Fillerct
                     FillerflagStopped = true
                     FillerflagRunning = false
+                    if(CntInFiller - CntOutFiller - FillerReject.rejected != 0 && ! FillerRejectFlag){
+                      FillerdeltaRejected = CntInFiller - CntOutFiller - FillerReject.rejected
+                      FillerReject.rejected = CntInFiller - CntOutFiller
+                      fs.writeFileSync('FillerRejected.json','{"rejected": ' + FillerReject.rejected + '}')
+                      FillerRejectFlag = true
+                    }else{
+                      FillerdeltaRejected = null
+                    }
                     FillerflagPrint = 1
                   }
                 }
@@ -284,6 +389,7 @@ client1.on('connect', function(err) {
                   ST: Fillerstate,
                   CPQI: CntOutFiller,//CntInFiller,
                   CPQO: CntOutFiller,
+                  CPQR : FillerdeltaRejected,
                   SP: Fillerspeed
                 }
                 if (FillerflagPrint == 1) {
@@ -310,6 +416,8 @@ client1.on('connect', function(err) {
                     Coderspeed = Coderct - CoderspeedTemp
                     CoderspeedTemp = Coderct
                     Codersec = Date.now()
+                    CoderdeltaRejected = null
+                    CoderRejectFlag = false
                     Codertime = Date.now()
                   }
                   CodersecStop = 0
@@ -327,6 +435,14 @@ client1.on('connect', function(err) {
                     CoderspeedTemp = Coderct
                     CoderflagStopped = true
                     CoderflagRunning = false
+                    if(CntInCoder - CntOutCoder - CoderReject.rejected != 0 && ! CoderRejectFlag){
+                     CoderdeltaRejected = CntInCoder - CntOutCoder - CoderReject.rejected
+                     CoderReject.rejected = CntInCoder - CntOutCoder
+                     fs.writeFileSync('CoderRejected.json','{"rejected": ' + CoderReject.rejected + '}')
+                     CoderRejectFlag = true
+                   }else{
+                     CoderdeltaRejected = null
+                   }
                     CoderflagPrint = 1
                   }
                 }
@@ -344,6 +460,7 @@ client1.on('connect', function(err) {
                   ST: Coderstate,
                   CPQI: CntInCoder,
                   CPQO: CntOutCoder,
+                  CPQR : CoderdeltaRejected,
                   SP: Coderspeed
                 }
                 if (CoderflagPrint == 1) {
@@ -457,6 +574,8 @@ client1.on('connect', function(err) {
                       Tunnelspeed = Tunnelct - TunnelspeedTemp
                       TunnelspeedTemp = Tunnelct
                       Tunnelsec = Date.now()
+                      TunneldeltaRejected = null
+                      TunnelRejectFlag = false
                       Tunneltime = Date.now()
                     }
                     TunnelsecStop = 0
@@ -474,6 +593,14 @@ client1.on('connect', function(err) {
                       TunnelspeedTemp = Tunnelct
                       TunnelflagStopped = true
                       TunnelflagRunning = false
+                      if(CntInTunnel - CntOutTunnel - TunnelReject.rejected != 0 && ! TunnelRejectFlag){
+                     TunneldeltaRejected = CntInTunnel - CntOutTunnel - TunnelReject.rejected
+                     TunnelReject.rejected = CntInTunnel - CntOutTunnel
+                     fs.writeFileSync('TunnelRejected.json','{"rejected": ' + TunnelReject.rejected + '}')
+                     TunnelRejectFlag = true
+                   }else{
+                     TunneldeltaRejected = null
+                   }
                       TunnelflagPrint = 1
                     }
                   }
@@ -491,6 +618,7 @@ client1.on('connect', function(err) {
                     ST: Tunnelstate,
                     CPQI: CntOutXray,//CntInTunnel,
                     CPQO: CntOutTunnel,
+                    CPQR : TunneldeltaRejected,
                     SP: Tunnelspeed
                   }
                   if (TunnelflagPrint == 1) {
@@ -538,6 +666,8 @@ client1.on('connect', function(err) {
                         Wrapperspeed = Wrapperct - WrapperspeedTemp
                         WrapperspeedTemp = Wrapperct
                         Wrappersec = Date.now()
+                        WrapperdeltaRejected = null
+                        WrapperRejectFlag = false
                         Wrappertime = Date.now()
                       }
                       WrappersecStop = 0
@@ -555,6 +685,14 @@ client1.on('connect', function(err) {
                         WrapperspeedTemp = Wrapperct
                         WrapperflagStopped = true
                         WrapperflagRunning = false
+                        if(CntInWrapper - CntOutWrapper - WrapperReject.rejected != 0 && ! WrapperRejectFlag){
+                     WrapperdeltaRejected = CntInWrapper - CntOutWrapper - WrapperReject.rejected
+                     WrapperReject.rejected = CntInWrapper - CntOutWrapper
+                     fs.writeFileSync('WrapperRejected.json','{"rejected": ' + WrapperReject.rejected + '}')
+                     WrapperRejectFlag = true
+                   }else{
+                     WrapperdeltaRejected = null
+                   }
                         WrapperflagPrint = 1
                       }
                     }
@@ -573,6 +711,7 @@ client1.on('connect', function(err) {
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
                       CPQO: CntOutWrapper,
+                      CPQR : WrapperdeltaRejected, 
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -599,6 +738,8 @@ client1.on('connect', function(err) {
                         Inverterspeed = Inverterct - InverterspeedTemp
                         InverterspeedTemp = Inverterct
                         Invertersec = Date.now()
+                        InverterdeltaRejected = null
+                        InverterRejectFlag = false
                         Invertertime = Date.now()
                       }
                       InvertersecStop = 0
@@ -616,6 +757,14 @@ client1.on('connect', function(err) {
                         InverterspeedTemp = Inverterct
                         InverterflagStopped = true
                         InverterflagRunning = false
+                        if(CntInInverter - CntOutInverter - InverterReject.rejected != 0 && ! InverterRejectFlag){
+                     InverterdeltaRejected = CntInInverter - CntOutInverter - InverterReject.rejected
+                     InverterReject.rejected = CntInInverter - CntOutInverter
+                     fs.writeFileSync('InverterRejected.json','{"rejected": ' + InverterReject.rejected + '}')
+                     InverterRejectFlag = true
+                   }else{
+                     InverterdeltaRejected = null
+                   }
                         InverterflagPrint = 1
                       }
                     }
@@ -633,6 +782,7 @@ client1.on('connect', function(err) {
                       ST: Inverterstate,
                       CPQI: CntInInverter,
                       CPQO: CntOutInverter,
+                      CPQR : InverterdeltaRejected, 
                       SP: Inverterspeed
                     }
                     if (InverterflagPrint == 1) {
