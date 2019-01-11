@@ -364,19 +364,11 @@ client1.on('connect', function(err) {
                     FillersecStop = Date.now()
                   }
                   if( ( Date.now() - ( FillertimeStop * 1000 ) ) >= FillersecStop ){
-                    Fillerspeed = 0
+                    //Fillerspeed = 0
                     Fillerstate = 2
                     FillerspeedTemp = Fillerct
                     FillerflagStopped = true
                     FillerflagRunning = false
-                    if(CntInFiller - CntOutFiller - FillerReject.rejected != 0 && ! FillerRejectFlag){
-                      FillerdeltaRejected = CntInFiller - CntOutFiller - FillerReject.rejected
-                      FillerReject.rejected = CntInFiller - CntOutFiller
-                      fs.writeFileSync('FillerRejected.json','{"rejected": ' + FillerReject.rejected + '}')
-                      FillerRejectFlag = true
-                    }else{
-                      FillerdeltaRejected = null
-                    }
                     FillerflagPrint = 1
                   }
                 }
@@ -394,7 +386,7 @@ client1.on('connect', function(err) {
                   ST: Fillerstate,
                   CPQI: CntOutFiller,//CntInFiller,
                   CPQO: CntOutFiller,
-                  CPQR : FillerdeltaRejected,
+                  //CPQR : FillerdeltaRejected,
                   SP: Fillerspeed
                 }
                 if (FillerflagPrint == 1) {
@@ -435,19 +427,11 @@ client1.on('connect', function(err) {
                     CodersecStop = Date.now()
                   }
                   if( ( Date.now() - ( CodertimeStop * 1000 ) ) >= CodersecStop ){
-                    Coderspeed = 0
+                    //Coderspeed = 0
                     Coderstate = 2
                     CoderspeedTemp = Coderct
                     CoderflagStopped = true
                     CoderflagRunning = false
-                    if(CntInCoder - CntOutCoder - CoderReject.rejected != 0 && ! CoderRejectFlag){
-                     CoderdeltaRejected = CntInCoder - CntOutCoder - CoderReject.rejected
-                     CoderReject.rejected = CntInCoder - CntOutCoder
-                     fs.writeFileSync('CoderRejected.json','{"rejected": ' + CoderReject.rejected + '}')
-                     CoderRejectFlag = true
-                   }else{
-                     CoderdeltaRejected = null
-                   }
                     CoderflagPrint = 1
                   }
                 }
@@ -465,7 +449,7 @@ client1.on('connect', function(err) {
                   ST: Coderstate,
                   CPQI: CntInCoder,
                   CPQO: CntOutCoder,
-                  CPQR : CoderdeltaRejected,
+                  //CPQR : CoderdeltaRejected,
                   SP: Coderspeed
                 }
                 if (CoderflagPrint == 1) {
@@ -506,19 +490,11 @@ client1.on('connect', function(err) {
                     XraysecStop = Date.now()
                   }
                   if( ( Date.now() - ( XraytimeStop * 1000 ) ) >= XraysecStop ){
-                    Xrayspeed = 0
+                    //Xrayspeed = 0
                     Xraystate = 2
                     XrayspeedTemp = Xrayct
                     XrayflagStopped = true
                     XrayflagRunning = false
-                    if(CntInXray - CntOutXray - XrayReject.rejected != 0 && ! XrayRejectFlag){
-                      XraydeltaRejected = CntInXray - CntOutXray - XrayReject.rejected
-                      XrayReject.rejected = CntInXray - CntOutXray
-                      fs.writeFileSync('XrayRejected.json','{"rejected": ' + XrayReject.rejected + '}')
-                      XrayRejectFlag = true
-                    }else{
-                      XraydeltaRejected = null
-                    }
                     XrayflagPrint = 1
                   }
                 }
@@ -536,7 +512,7 @@ client1.on('connect', function(err) {
                   ST: Xraystate,
                   CPQI : CntInXray,
                   CPQO : CntOutXray,
-                  CPQR : XraydeltaRejected,
+                  //CPQR : XraydeltaRejected,
                   SP: Xrayspeed
                 }
                 if (XrayflagPrint == 1) {
@@ -593,19 +569,11 @@ client1.on('connect', function(err) {
                       TunnelsecStop = Date.now()
                     }
                     if( ( Date.now() - ( TunneltimeStop * 1000 ) ) >= TunnelsecStop ){
-                      Tunnelspeed = 0
+                      //Tunnelspeed = 0
                       Tunnelstate = 2
                       TunnelspeedTemp = Tunnelct
                       TunnelflagStopped = true
                       TunnelflagRunning = false
-                      if(CntInTunnel - CntOutTunnel - TunnelReject.rejected != 0 && ! TunnelRejectFlag){
-                     TunneldeltaRejected = CntInTunnel - CntOutTunnel - TunnelReject.rejected
-                     TunnelReject.rejected = CntInTunnel - CntOutTunnel
-                     fs.writeFileSync('TunnelRejected.json','{"rejected": ' + TunnelReject.rejected + '}')
-                     TunnelRejectFlag = true
-                   }else{
-                     TunneldeltaRejected = null
-                   }
                       TunnelflagPrint = 1
                     }
                   }
@@ -623,7 +591,7 @@ client1.on('connect', function(err) {
                     ST: Tunnelstate,
                     CPQI: CntOutXray,//CntInTunnel,
                     CPQO: CntOutTunnel,
-                    CPQR : TunneldeltaRejected,
+                    //CPQR : TunneldeltaRejected,
                     SP: Tunnelspeed
                   }
                   if (TunnelflagPrint == 1) {
@@ -685,19 +653,11 @@ client1.on('connect', function(err) {
                         WrappersecStop = Date.now()
                       }
                       if( ( Date.now() - ( WrappertimeStop * 1000 ) ) >= WrappersecStop ){
-                        Wrapperspeed = 0
+                        //Wrapperspeed = 0
                         Wrapperstate = 2
                         WrapperspeedTemp = Wrapperct
                         WrapperflagStopped = true
                         WrapperflagRunning = false
-                        if(CntInWrapper - CntOutWrapper - WrapperReject.rejected != 0 && ! WrapperRejectFlag){
-                     WrapperdeltaRejected = CntInWrapper - CntOutWrapper - WrapperReject.rejected
-                     WrapperReject.rejected = CntInWrapper - CntOutWrapper
-                     fs.writeFileSync('WrapperRejected.json','{"rejected": ' + WrapperReject.rejected + '}')
-                     WrapperRejectFlag = true
-                   }else{
-                     WrapperdeltaRejected = null
-                   }
                         WrapperflagPrint = 1
                       }
                     }
@@ -716,7 +676,7 @@ client1.on('connect', function(err) {
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
                       CPQO: CntOutWrapper,
-                      CPQR : WrapperdeltaRejected, 
+                      //CPQR : WrapperdeltaRejected, 
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -757,19 +717,11 @@ client1.on('connect', function(err) {
                         InvertersecStop = Date.now()
                       }
                       if( ( Date.now() - ( InvertertimeStop * 1000 ) ) >= InvertersecStop ){
-                        Inverterspeed = 0
+                        //Inverterspeed = 0
                         Inverterstate = 2
                         InverterspeedTemp = Inverterct
                         InverterflagStopped = true
                         InverterflagRunning = false
-                        if(CntInInverter - CntOutInverter - InverterReject.rejected != 0 && ! InverterRejectFlag){
-                     InverterdeltaRejected = CntInInverter - CntOutInverter - InverterReject.rejected
-                     InverterReject.rejected = CntInInverter - CntOutInverter
-                     fs.writeFileSync('InverterRejected.json','{"rejected": ' + InverterReject.rejected + '}')
-                     InverterRejectFlag = true
-                   }else{
-                     InverterdeltaRejected = null
-                   }
                         InverterflagPrint = 1
                       }
                     }
@@ -787,7 +739,7 @@ client1.on('connect', function(err) {
                       ST: Inverterstate,
                       CPQI: CntInInverter,
                       CPQO: CntOutInverter,
-                      CPQR : InverterdeltaRejected, 
+                      //CPQR : InverterdeltaRejected, 
                       SP: Inverterspeed
                     }
                     if (InverterflagPrint == 1) {
@@ -820,6 +772,36 @@ client1.on('connect', function(err) {
       client3.on('close', function() {
         clearInterval(intId3);
       });
+
+      function getRejects() {
+        var FillerDif = CntInFiller - CntOutFiller
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
+        FillerReject.rejected = FillerDif
+        fs.writeFileSync('FillerRejected.json', '{"rejected": ' + FillerReject.rejected + '}')
+        var CoderDif = CntInCoder - CntOutCoder
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
+        CoderReject.rejected = CoderDif
+        fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
+        var CoderDif = CntInCoder - CntOutCoder
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
+        CoderReject.rejected = CoderDif
+        fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
+        var TunnelDif = CntOutXray - CntOutTunnel
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
+        TunnelReject.rejected = TunnelDif
+        fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
+        var WrapperDif = CntInWrapper - CntOutWrapper
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
+        WrapperReject.rejected = WrapperDif
+        fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
+        var InverterDif = CntInInverter - CntOutInverter
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(InverterDif - InverterReject.rejected) + '\n')
+        InverterReject.rejected = InverterDif
+        fs.writeFileSync('InverterRejected.json', '{"rejected": ' + InverterReject.rejected + '}')
+
+      }
+      setTimeout(getRejects, 60000);
+      var storeReject = setInterval(getRejects, 1740000);
 
 }catch(err){
     fs.appendFileSync("error_Comet.log",err + '\n');
