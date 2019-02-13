@@ -337,6 +337,7 @@ client1.on('connect', function(err) {
           CntOutCoder = joinWord(resp.register[8], resp.register[9])
           CntInXray = joinWord(resp.register[8], resp.register[9])
           CntOutXray = joinWord(resp.register[10], resp.register[11])
+          CntInTunnel = joinWord(resp.register[10], resp.register[11])
           //------------------------------------------Filler----------------------------------------------
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
                 if (!FillerONS && Fillerct) {
@@ -384,7 +385,7 @@ client1.on('connect', function(err) {
                 }
                 Fillerresults = {
                   ST: Fillerstate,
-                  CPQI: CntOutFiller,//CntInFiller,
+                  CPQI: CntInFiller,//CntInFiller,
                   CPQO: CntOutFiller,
                   //CPQR : FillerdeltaRejected,
                   SP: Fillerspeed
@@ -541,7 +542,6 @@ client1.on('connect', function(err) {
       setInterval(function(){
           client2.readHoldingRegisters(0, 16).then(function(resp) {
             CntOutTunnel =  joinWord(resp.register[0], resp.register[1])
-            CntInTunnel = joinWord(resp.register[10], resp.register[11])
             //------------------------------------------Tunnel----------------------------------------------
                   Tunnelct = CntOutTunnel // NOTE: igualar al contador de salida
                   if (!TunnelONS && Tunnelct) {
@@ -786,7 +786,7 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
         CoderReject.rejected = CoderDif
         fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
-        var TunnelDif = CntOutXray - CntOutTunnel
+        var TunnelDif = CntInTunnel - CntOutTunnel
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
         fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
