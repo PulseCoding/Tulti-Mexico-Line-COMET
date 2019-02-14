@@ -23,6 +23,7 @@ try{
       FillerflagRunning = false,
       FillerRejectFlag = false,
       FillerReject,
+      CntInFillerTemp = 0;
       FillerVerify = (function(){
             try{
               FillerReject = fs.readFileSync('FillerRejected.json')
@@ -36,7 +37,7 @@ try{
                 fs.writeFileSync('FillerRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
                 FillerReject = {
                   rejected : 0
-                }                 
+                }
               }
             }
           })();
@@ -331,14 +332,19 @@ client1.on('connect', function(err) {
   intId1 =
     setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
-          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5])
-          CntOutFiller = joinWord(resp.register[6], resp.register[7])
-          CntInCoder  = joinWord(resp.register[6], resp.register[7])
-          CntOutCoder = joinWord(resp.register[8], resp.register[9])
-          CntInXray = joinWord(resp.register[8], resp.register[9])
-          CntOutXray = joinWord(resp.register[10], resp.register[11])
-          CntInTunnel = joinWord(resp.register[10], resp.register[11])
+          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
+          CntOutFiller = joinWord(resp.register[6], resp.register[7]);
+          CntInCoder  = joinWord(resp.register[6], resp.register[7]);
+          CntOutCoder = joinWord(resp.register[8], resp.register[9]);
+          CntInXray = joinWord(resp.register[8], resp.register[9]);
+          CntOutXray = joinWord(resp.register[10], resp.register[11]);
+          CntInTunnel = joinWord(resp.register[10], resp.register[11]);
           //------------------------------------------Filler----------------------------------------------
+          if(CntInFillerTemp>CntInFiller){
+            CntInFiller = CntInFillerTemp
+          }else{
+            CntInFillerTemp = CntInFiller;
+          }
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
                 if (!FillerONS && Fillerct) {
                   FillerspeedTemp = Fillerct
@@ -676,7 +682,7 @@ client1.on('connect', function(err) {
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
                       CPQO: CntOutWrapper,
-                      //CPQR : WrapperdeltaRejected, 
+                      //CPQR : WrapperdeltaRejected,
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -739,7 +745,7 @@ client1.on('connect', function(err) {
                       ST: Inverterstate,
                       CPQI: CntInInverter,
                       CPQO: CntOutInverter,
-                      //CPQR : InverterdeltaRejected, 
+                      //CPQR : InverterdeltaRejected,
                       SP: Inverterspeed
                     }
                     if (InverterflagPrint == 1) {
