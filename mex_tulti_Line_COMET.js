@@ -16,31 +16,30 @@ try{
       FillerspeedTemp = 0,
       FillerflagPrint = 0,
       FillersecStop = 0,
-      FillerONS = false,
       FillerdeltaRejected = null,
-      FillertimeStop = 60, //NOTE: Timestop en segundos
+      FillerONS = false,
+      FillertimeStop = 60, //NOTE: Timestop
       FillerWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
       FillerflagRunning = false,
       FillerRejectFlag = false,
       FillerReject,
-      CntInFillerTemp = 0;
       FillerVerify = (function(){
-            try{
-              FillerReject = fs.readFileSync('FillerRejected.json')
-              if(FillerReject.toString().indexOf('}') > 0 && FillerReject.toString().indexOf('{\"rejected\":') != -1){
-                FillerReject = JSON.parse(FillerReject)
-              }else{
-                throw 12121212
-              }
-            }catch(err){
-              if(err.code == 'ENOENT' || err == 12121212){
-                fs.writeFileSync('FillerRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
-                FillerReject = {
-                  rejected : 0
-                }
-              }
+        try{
+          FillerReject = fs.readFileSync('FillerRejected.json')
+          if(FillerReject.toString().indexOf('}') > 0 && FillerReject.toString().indexOf('{\"rejected\":') != -1){
+            FillerReject = JSON.parse(FillerReject)
+          }else{
+            throw 12121212
+          }
+        }catch(err){
+          if(err.code == 'ENOENT' || err == 12121212){
+            fs.writeFileSync('FillerRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+            FillerReject = {
+              rejected : 0
             }
-          })();
+          }
+        }
+      })()
   var Coderct = null,
       Coderresults = null,
       CntInCoder = null,
@@ -340,11 +339,6 @@ client1.on('connect', function(err) {
           CntOutXray = joinWord(resp.register[10], resp.register[11]);
           CntInTunnel = joinWord(resp.register[10], resp.register[11]);
           //------------------------------------------Filler----------------------------------------------
-          if(CntInFillerTemp>CntInFiller){
-            CntInFiller = CntInFillerTemp
-          }else{
-            CntInFillerTemp = CntInFiller;
-          }
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
                 if (!FillerONS && Fillerct) {
                   FillerspeedTemp = Fillerct
@@ -371,7 +365,7 @@ client1.on('connect', function(err) {
                     FillersecStop = Date.now()
                   }
                   if( ( Date.now() - ( FillertimeStop * 1000 ) ) >= FillersecStop ){
-                    //Fillerspeed = 0
+                    Fillerspeed = 0
                     Fillerstate = 2
                     FillerspeedTemp = Fillerct
                     FillerflagStopped = true
@@ -391,8 +385,8 @@ client1.on('connect', function(err) {
                 }
                 Fillerresults = {
                   ST: Fillerstate,
-                  CPQI: CntInFiller,//CntInFiller,
-                  CPQO: CntOutFiller,
+                  CPQI : CntInFiller,
+                  CPQO : CntOutFiller,
                   //CPQR : FillerdeltaRejected,
                   SP: Fillerspeed
                 }
@@ -400,7 +394,6 @@ client1.on('connect', function(err) {
                   for (var key in Fillerresults) {
                     if( Fillerresults[key] != null && ! isNaN(Fillerresults[key]) )
                     //NOTE: Cambiar path
-                    console.log("Imprimir log Filler!...");
                     fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Fillertime + ',var=' + key + ',val=' + Fillerresults[key] + '\n')
                   }
                   FillerflagPrint = 0
