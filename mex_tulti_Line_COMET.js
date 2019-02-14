@@ -400,6 +400,7 @@ client1.on('connect', function(err) {
                   for (var key in Fillerresults) {
                     if( Fillerresults[key] != null && ! isNaN(Fillerresults[key]) )
                     //NOTE: Cambiar path
+                    console.log("Imprimir log Filler!...");
                     fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Fillertime + ',var=' + key + ',val=' + Fillerresults[key] + '\n')
                   }
                   FillerflagPrint = 0
@@ -784,10 +785,6 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
         FillerReject.rejected = FillerDif
         fs.writeFileSync('FillerRejected.json', '{"rejected": ' + FillerReject.rejected + '}')
-        var CoderDif = CntInCoder - CntOutCoder
-        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
-        CoderReject.rejected = CoderDif
-        fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
         var CoderDif = CntInCoder - CntOutCoder
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
         CoderReject.rejected = CoderDif
