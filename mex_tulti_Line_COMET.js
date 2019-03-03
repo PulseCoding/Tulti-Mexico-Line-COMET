@@ -331,7 +331,8 @@ client1.on('connect', function(err) {
   intId1 =
     setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
-          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
+          //CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
+          CntInFiller = joinWord(resp.register[0], resp.register[1])*3;
           CntOutFiller = joinWord(resp.register[6], resp.register[7]);
           CntInCoder  = joinWord(resp.register[6], resp.register[7]);
           CntOutCoder = joinWord(resp.register[8], resp.register[9]);
