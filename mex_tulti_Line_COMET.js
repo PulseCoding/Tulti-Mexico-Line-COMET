@@ -332,12 +332,12 @@ client1.on('connect', function(err) {
     setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
           //CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
-          CntInFiller = joinWord(resp.register[0], resp.register[1])*3;
-          CntOutFiller = joinWord(resp.register[6], resp.register[7]);
-          CntInCoder  = joinWord(resp.register[6], resp.register[7]);
-          CntOutCoder = joinWord(resp.register[8], resp.register[9]);
-          CntInXray = joinWord(resp.register[8], resp.register[9]);
-          CntOutXray = joinWord(resp.register[10], resp.register[11]);
+          CntInFiller = joinWord(resp.register[0], resp.register[1])*3; //Physic Signal
+          CntOutFiller = joinWord(resp.register[6], resp.register[7]);  //Physic Signal
+          CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal
+          CntOutCoder = joinWord(resp.register[8], resp.register[9]);   
+          CntInXray = joinWord(resp.register[8], resp.register[9]);    
+          CntOutXray = joinWord(resp.register[10], resp.register[11]);   //Physic Signal
           CntInTunnel = joinWord(resp.register[10], resp.register[11]);
           //------------------------------------------Filler----------------------------------------------
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
@@ -542,7 +542,7 @@ client1.on('connect', function(err) {
     intId2 =
       setInterval(function(){
           client2.readHoldingRegisters(0, 16).then(function(resp) {
-            CntOutTunnel =  joinWord(resp.register[0], resp.register[1])
+            CntOutTunnel =  joinWord(resp.register[0], resp.register[1]) //Physic Signal
             //------------------------------------------Tunnel----------------------------------------------
                   Tunnelct = CntOutTunnel // NOTE: igualar al contador de salida
                   if (!TunnelONS && Tunnelct) {
@@ -621,12 +621,12 @@ client1.on('connect', function(err) {
       intId3 =
         setInterval(function(){
             client3.readHoldingRegisters(0, 16).then(function(resp) {
-              CntInWrapper =  joinWord(resp.register[0], resp.register[1])
-              CntBoxInWrapper = joinWord(resp.register[4], resp.register[5])
-              CntInInverter = joinWord(resp.register[2], resp.register[3])
-              CntOutInverter = joinWord(resp.register[4], resp.register[5])
+              CntInWrapper =  joinWord(resp.register[0], resp.register[1]) //Physic Signal
+              CntBoxInWrapper = joinWord(resp.register[4], resp.register[5]) //Physic Signal
+              CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
+              CntOutInverter = joinWord(resp.register[0], resp.register[1])
               CntOutWrapper = joinWord(resp.register[6], resp.register[7])
-              CntOutEOL = joinWord(resp.register[6], resp.register[7])
+              CntOutEOL = joinWord(resp.register[6], resp.register[7])        //Physic Signal
               //------------------------------------------Wrapper----------------------------------------------
                     Wrapperct = CntOutWrapper // NOTE: igualar al contador de salida
                     if (!WrapperONS && Wrapperct) {
@@ -783,7 +783,7 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
         CoderReject.rejected = CoderDif
         fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
-        var TunnelDif = CntInTunnel - CntOutTunnel
+        var TunnelDif = CntInTunnel - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
         fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
