@@ -331,12 +331,12 @@ client1.on('connect', function(err) {
   intId1 =
     setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
-          //CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
-          CntInFiller = joinWord(resp.register[0], resp.register[1])*3; //Physic Signal
+          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
+          //CntInFiller = joinWord(resp.register[0], resp.register[1])*3; //Physic Signal
           CntOutFiller = joinWord(resp.register[6], resp.register[7]);  //Physic Signal
           CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal
           CntOutCoder = joinWord(resp.register[8], resp.register[9]);   
-          CntInXray = joinWord(resp.register[8], resp.register[9]);    
+          CntInXray = joinWord(resp.register[10], resp.register[11]);    
           CntOutXray = joinWord(resp.register[10], resp.register[11]);   //Physic Signal
           CntInTunnel = joinWord(resp.register[10], resp.register[11]);
           //------------------------------------------Filler----------------------------------------------
