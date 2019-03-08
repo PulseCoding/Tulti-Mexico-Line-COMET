@@ -331,14 +331,11 @@ client1.on('connect', function(err) {
   intId1 =
     setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
-          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]);
-          //CntInFiller = joinWord(resp.register[0], resp.register[1])*3; //Physic Signal
+          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]); //Physic Signal
           CntOutFiller = joinWord(resp.register[6], resp.register[7]);  //Physic Signal
-          CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal
-          CntOutCoder = joinWord(resp.register[8], resp.register[9]);   
-          CntInXray = joinWord(resp.register[10], resp.register[11]);    
+          CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal   
+          CntInXray = joinWord(resp.register[8], resp.register[9]);    
           CntOutXray = joinWord(resp.register[10], resp.register[11]);   //Physic Signal
-          CntInTunnel = joinWord(resp.register[10], resp.register[11]);
           //------------------------------------------Filler----------------------------------------------
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
                 if (!FillerONS && Fillerct) {
@@ -388,7 +385,6 @@ client1.on('connect', function(err) {
                   ST: Fillerstate,
                   CPQI : CntInFiller,
                   CPQO : CntOutFiller,
-                  //CPQR : FillerdeltaRejected,
                   SP: Fillerspeed
                 }
                 if (FillerflagPrint == 1) {
@@ -403,7 +399,7 @@ client1.on('connect', function(err) {
                 }
           //------------------------------------------Filler----------------------------------------------
           //------------------------------------------Coder----------------------------------------------
-                Coderct = CntOutCoder //NOTE: igualar al contador de salida
+                Coderct = CntInCoder //NOTE: igualar al contador de salida
                 if (!CoderONS && Coderct) {
                   CoderspeedTemp = Coderct
                   Codersec = Date.now()
@@ -450,8 +446,6 @@ client1.on('connect', function(err) {
                 Coderresults = {
                   ST: Coderstate,
                   CPQI: CntInCoder,
-                  CPQO: CntOutCoder,
-                  //CPQR : CoderdeltaRejected,
                   SP: Coderspeed
                 }
                 if (CoderflagPrint == 1) {
@@ -512,9 +506,7 @@ client1.on('connect', function(err) {
                 }
                 Xrayresults = {
                   ST: Xraystate,
-                  CPQI : CntInXray,
                   CPQO : CntOutXray,
-                  //CPQR : XraydeltaRejected,
                   SP: Xrayspeed
                 }
                 if (XrayflagPrint == 1) {
@@ -590,9 +582,8 @@ client1.on('connect', function(err) {
                   }
                   Tunnelresults = {
                     ST: Tunnelstate,
-                    CPQI: CntOutXray,//CntInTunnel,
+                    CPQI: CntOutXray,
                     CPQO: CntOutTunnel,
-                    //CPQR : TunneldeltaRejected,
                     SP: Tunnelspeed
                   }
                   if (TunnelflagPrint == 1) {
@@ -621,14 +612,75 @@ client1.on('connect', function(err) {
       intId3 =
         setInterval(function(){
             client3.readHoldingRegisters(0, 16).then(function(resp) {
+              CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
               CntInWrapper =  joinWord(resp.register[0], resp.register[1]) //Physic Signal
               CntBoxInWrapper = joinWord(resp.register[4], resp.register[5]) //Physic Signal
-              CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
-              CntOutInverter = joinWord(resp.register[0], resp.register[1])
               CntOutWrapper = joinWord(resp.register[6], resp.register[7])
               CntOutEOL = joinWord(resp.register[6], resp.register[7])        //Physic Signal
+               //------------------------------------------Inverter----------------------------------------------
+                    Inverterct = CntInInverter // NOTE: igualar al contador de salida
+                    if (!InverterONS && Inverterct) {
+                      InverterspeedTemp = Inverterct
+                      Invertersec = Date.now()
+                      InverterONS = true
+                      Invertertime = Date.now()
+                    }
+                    if(Inverterct > Inverteractual){
+                      if(InverterflagStopped){
+                        Inverterspeed = Inverterct - InverterspeedTemp
+                        InverterspeedTemp = Inverterct
+                        Invertersec = Date.now()
+                        InverterdeltaRejected = null
+                        InverterRejectFlag = false
+                        Invertertime = Date.now()
+                      }
+                      InvertersecStop = 0
+                      Inverterstate = 1
+                      InverterflagStopped = false
+                      InverterflagRunning = true
+                    } else if( Inverterct == Inverteractual ){
+                      if(InvertersecStop == 0){
+                        Invertertime = Date.now()
+                        InvertersecStop = Date.now()
+                      }
+                      if( ( Date.now() - ( InvertertimeStop * 1000 ) ) >= InvertersecStop ){
+                        //Inverterspeed = 0
+                        Inverterstate = 2
+                        InverterspeedTemp = Inverterct
+                        InverterflagStopped = true
+                        InverterflagRunning = false
+                        InverterflagPrint = 1
+                      }
+                    }
+                    Inverteractual = Inverterct
+                    if(Date.now() - 60000 * InverterWorktime >= Invertersec && InvertersecStop == 0){
+                      if(InverterflagRunning && Inverterct){
+                        InverterflagPrint = 1
+                        InvertersecStop = 0
+                        Inverterspeed = Inverterct - InverterspeedTemp
+                        InverterspeedTemp = Inverterct
+                        Invertersec = Date.now()
+                      }
+                    }
+                    Inverterresults = {
+                      ST: Inverterstate,
+                      CPQI: CntInInverter,
+                      CPQO: CntInWrapper,
+                      SP: Inverterspeed
+                    }
+                    if (InverterflagPrint == 1) {
+                      for (var key in Inverterresults) {
+                        if( Inverterresults[key] != null && ! isNaN(Inverterresults[key]) )
+                        //NOTE: Cambiar path
+                        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Invertertime + ',var=' + key + ',val=' + Inverterresults[key] + '\n')
+                      }
+                      InverterflagPrint = 0
+                      InvertersecStop = 0
+                      Invertertime = Date.now()
+                    }
+              //------------------------------------------Inverter----------------------------------------------
               //------------------------------------------Wrapper----------------------------------------------
-                    Wrapperct = CntOutWrapper // NOTE: igualar al contador de salida
+                    Wrapperct = CntOutEOL // NOTE: igualar al contador de salida
                     if (!WrapperONS && Wrapperct) {
                       WrapperspeedTemp = Wrapperct
                       Wrappersec = Date.now()
@@ -676,8 +728,7 @@ client1.on('connect', function(err) {
                       ST: Wrapperstate,
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
-                      CPQO: CntOutWrapper,
-                      //CPQR : WrapperdeltaRejected,
+                      CPQO: CntOutEOL,
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -691,69 +742,7 @@ client1.on('connect', function(err) {
                       Wrappertime = Date.now()
                     }
               //------------------------------------------Wrapper----------------------------------------------
-              //------------------------------------------Inverter----------------------------------------------
-                    Inverterct = CntOutInverter // NOTE: igualar al contador de salida
-                    if (!InverterONS && Inverterct) {
-                      InverterspeedTemp = Inverterct
-                      Invertersec = Date.now()
-                      InverterONS = true
-                      Invertertime = Date.now()
-                    }
-                    if(Inverterct > Inverteractual){
-                      if(InverterflagStopped){
-                        Inverterspeed = Inverterct - InverterspeedTemp
-                        InverterspeedTemp = Inverterct
-                        Invertersec = Date.now()
-                        InverterdeltaRejected = null
-                        InverterRejectFlag = false
-                        Invertertime = Date.now()
-                      }
-                      InvertersecStop = 0
-                      Inverterstate = 1
-                      InverterflagStopped = false
-                      InverterflagRunning = true
-                    } else if( Inverterct == Inverteractual ){
-                      if(InvertersecStop == 0){
-                        Invertertime = Date.now()
-                        InvertersecStop = Date.now()
-                      }
-                      if( ( Date.now() - ( InvertertimeStop * 1000 ) ) >= InvertersecStop ){
-                        //Inverterspeed = 0
-                        Inverterstate = 2
-                        InverterspeedTemp = Inverterct
-                        InverterflagStopped = true
-                        InverterflagRunning = false
-                        InverterflagPrint = 1
-                      }
-                    }
-                    Inverteractual = Inverterct
-                    if(Date.now() - 60000 * InverterWorktime >= Invertersec && InvertersecStop == 0){
-                      if(InverterflagRunning && Inverterct){
-                        InverterflagPrint = 1
-                        InvertersecStop = 0
-                        Inverterspeed = Inverterct - InverterspeedTemp
-                        InverterspeedTemp = Inverterct
-                        Invertersec = Date.now()
-                      }
-                    }
-                    Inverterresults = {
-                      ST: Inverterstate,
-                      CPQI: CntInInverter,
-                      CPQO: CntOutInverter,
-                      //CPQR : InverterdeltaRejected,
-                      SP: Inverterspeed
-                    }
-                    if (InverterflagPrint == 1) {
-                      for (var key in Inverterresults) {
-                        if( Inverterresults[key] != null && ! isNaN(Inverterresults[key]) )
-                        //NOTE: Cambiar path
-                        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Invertertime + ',var=' + key + ',val=' + Inverterresults[key] + '\n')
-                      }
-                      InverterflagPrint = 0
-                      InvertersecStop = 0
-                      Invertertime = Date.now()
-                    }
-              //------------------------------------------Inverter----------------------------------------------
+
               /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
                    if(secEOL>=60 && CntOutEOL){
                       fs.appendFileSync("C:/PULSE/COMET_LOGS/mex_tul_eol_comet.log","tt="+Date.now()+",var=EOL"+",val="+CntOutEOL+"\n");
@@ -779,22 +768,19 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
         FillerReject.rejected = FillerDif
         fs.writeFileSync('FillerRejected.json', '{"rejected": ' + FillerReject.rejected + '}')
-        var CoderDif = CntInCoder - CntOutCoder
-        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(CoderDif - CoderReject.rejected) + '\n')
-        CoderReject.rejected = CoderDif
-        fs.writeFileSync('CoderRejected.json', '{"rejected": ' + CoderReject.rejected + '}')
-        var TunnelDif = CntInTunnel - CntOutTunnel //90 minutes of delay
+        var TunnelDif = CntOutXray - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
         fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
-        var WrapperDif = CntInWrapper - CntOutWrapper
-        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
-        WrapperReject.rejected = WrapperDif
-        fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
         var InverterDif = CntInInverter - CntOutInverter
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(InverterDif - InverterReject.rejected) + '\n')
         InverterReject.rejected = InverterDif
         fs.writeFileSync('InverterRejected.json', '{"rejected": ' + InverterReject.rejected + '}')
+        var WrapperDif = CntBoxInWrapper - CntOutWrapper
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
+        WrapperReject.rejected = WrapperDif
+        fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
+        
 
       }
       setTimeout(getRejects, 60000);
