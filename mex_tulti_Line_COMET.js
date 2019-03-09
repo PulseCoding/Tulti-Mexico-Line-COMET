@@ -613,9 +613,8 @@ client1.on('connect', function(err) {
         setInterval(function(){
             client3.readHoldingRegisters(0, 16).then(function(resp) {
               CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
-              CntInWrapper =  joinWord(resp.register[0], resp.register[1]) //Physic Signal
-              CntBoxInWrapper = joinWord(resp.register[4], resp.register[5]) //Physic Signal
-              CntOutWrapper = joinWord(resp.register[6], resp.register[7])
+              CntInWrapper =  joinWord(resp.register[4], resp.register[5]) //Physic Signal
+              CntBoxInWrapper = joinWord(resp.register[0], resp.register[1]) //Physic Signal
               CntOutEOL = joinWord(resp.register[6], resp.register[7])        //Physic Signal
                //------------------------------------------Inverter----------------------------------------------
                     Inverterct = CntInInverter // NOTE: igualar al contador de salida
