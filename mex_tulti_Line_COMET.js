@@ -765,7 +765,6 @@ client1.on('connect', function(err) {
       });
 
       function getRejects() {
-        
         var FillerDif = CntInFiller - CntOutFiller
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
         FillerReject.rejected = FillerDif
@@ -780,7 +779,6 @@ client1.on('connect', function(err) {
         var TunnelDif = CntInTunnel90 - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
-        TunnelTimeReject = 0;
         fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
         var InverterDif = CntInInverter - CntOutInverter
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(InverterDif - InverterReject.rejected) + '\n')
