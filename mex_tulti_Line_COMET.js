@@ -116,7 +116,9 @@ try{
           })();
   var Tunnelct = null,
       Tunnelresults = null,
-      CntInTunnel = null,
+      CntInTunnel = 0,
+      CntInTunnel60=0,
+      CntInTunnel90=0,
       CntOutTunnel = null,
       Tunnelactual = 0,
       Tunneltime = 0,
@@ -763,13 +765,22 @@ client1.on('connect', function(err) {
       });
 
       function getRejects() {
+        
         var FillerDif = CntInFiller - CntOutFiller
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
         FillerReject.rejected = FillerDif
         fs.writeFileSync('FillerRejected.json', '{"rejected": ' + FillerReject.rejected + '}')
-        var TunnelDif = CntOutXray - CntOutTunnel //90 minutes of delay
+        var XrayDif = CntInCoder - CntOutXray
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Xray_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(XrayDif - XrayReject.rejected) + '\n')
+        XrayReject.rejected = XrayDif
+        fs.writeFileSync('XrayRejected.json', '{"rejected": ' + XrayReject.rejected + '}')
+        CntInTunnel90=CntInTunnel60 
+        CntInTunnel60=CntInTunnel 
+        CntInTunnel = CntOutXray 
+        var TunnelDif = CntInTunnel90 - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
+        TunnelTimeReject = 0;
         fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
         var InverterDif = CntInInverter - CntOutInverter
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(InverterDif - InverterReject.rejected) + '\n')
@@ -779,12 +790,9 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
         WrapperReject.rejected = WrapperDif
         fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
-        
-
       }
       setTimeout(getRejects, 60000);
       var storeReject = setInterval(getRejects, 1740000);
 
 }catch(err){
     fs.appendFileSync("error_Comet.log",err + '\n');
-}
