@@ -794,3 +794,4 @@ client1.on('connect', function(err) {
 
 }catch(err){
     fs.appendFileSync("error_Comet.log",err + '\n');
+}
