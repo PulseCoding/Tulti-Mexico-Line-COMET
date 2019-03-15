@@ -117,6 +117,7 @@ try{
   var Tunnelct = null,
       Tunnelresults = null,
       CntInTunnel = 0,
+      CntInTunnel30=0,
       CntInTunnel60=0,
       CntInTunnel90=0,
       CntOutTunnel = null,
@@ -774,7 +775,8 @@ client1.on('connect', function(err) {
         XrayReject.rejected = XrayDif
         fs.writeFileSync('XrayRejected.json', '{"rejected": ' + XrayReject.rejected + '}')
         CntInTunnel90=CntInTunnel60 
-        CntInTunnel60=CntInTunnel 
+        CntInTunnel60=CntInTunnel30 
+        CntInTunnel30=CntInTunnel 
         CntInTunnel = CntOutXray 
         var TunnelDif = CntInTunnel90 - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
