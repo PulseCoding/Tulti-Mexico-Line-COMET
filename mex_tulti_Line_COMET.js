@@ -339,6 +339,7 @@ client1.on('connect', function(err) {
           CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal   
           CntInXray = joinWord(resp.register[8], resp.register[9]);    
           CntOutXray = joinWord(resp.register[10], resp.register[11]);   //Physic Signal
+          CntInTunnel = joinWord(resp.register[10], resp.register[11]);   //Mirror Signal
           //------------------------------------------Filler----------------------------------------------
                 Fillerct = CntOutFiller // NOTE: igualar al contador de salida
                 if (!FillerONS && Fillerct) {
@@ -585,7 +586,7 @@ client1.on('connect', function(err) {
                   }
                   Tunnelresults = {
                     ST: Tunnelstate,
-                    CPQI: CntOutXray,
+                    CPQI: CntInTunnel,
                     CPQO: CntOutTunnel,
                     SP: Tunnelspeed
                   }
@@ -616,11 +617,13 @@ client1.on('connect', function(err) {
         setInterval(function(){
             client3.readHoldingRegisters(0, 16).then(function(resp) {
               CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
-              CntInWrapper =  joinWord(resp.register[4], resp.register[5]) //Physic Signal
+              CntOutInverter = joinWord(resp.register[4], resp.register[5]) //Mirror Signal
+              CntInWrapper = joinWord(resp.register[4], resp.register[5]) //Physic Signal
               CntBoxInWrapper = joinWord(resp.register[0], resp.register[1]) //Physic Signal
+              CntOutWrapper = joinWord(resp.register[6], resp.register[7])        //Mirror Signal
               CntOutEOL = joinWord(resp.register[6], resp.register[7])        //Physic Signal
                //------------------------------------------Inverter----------------------------------------------
-                    Inverterct = CntInInverter // NOTE: igualar al contador de salida
+                    Inverterct = CntOutInverter // NOTE: igualar al contador de salida
                     if (!InverterONS && Inverterct) {
                       InverterspeedTemp = Inverterct
                       Invertersec = Date.now()
@@ -667,7 +670,7 @@ client1.on('connect', function(err) {
                     Inverterresults = {
                       ST: Inverterstate,
                       CPQI: CntInInverter,
-                      CPQO: CntInWrapper,
+                      CPQO: CntOutInverter,
                       SP: Inverterspeed
                     }
                     if (InverterflagPrint == 1) {
@@ -682,7 +685,7 @@ client1.on('connect', function(err) {
                     }
               //------------------------------------------Inverter----------------------------------------------
               //------------------------------------------Wrapper----------------------------------------------
-                    Wrapperct = CntOutEOL // NOTE: igualar al contador de salida
+                    Wrapperct = CntOutWrapper // NOTE: igualar al contador de salida
                     if (!WrapperONS && Wrapperct) {
                       WrapperspeedTemp = Wrapperct
                       Wrappersec = Date.now()
@@ -730,7 +733,7 @@ client1.on('connect', function(err) {
                       ST: Wrapperstate,
                       CPQBI: CntInWrapper,
                       CPQCI: CntBoxInWrapper,
-                      CPQO: CntOutEOL,
+                      CPQO: CntOutWrapper,
                       SP: Wrapperspeed
                     }
                     if (WrapperflagPrint == 1) {
@@ -777,7 +780,6 @@ client1.on('connect', function(err) {
         CntInTunnel90=CntInTunnel60 
         CntInTunnel60=CntInTunnel30 
         CntInTunnel30=CntInTunnel 
-        CntInTunnel = CntOutXray 
         var TunnelDif = CntInTunnel90 - CntOutTunnel //90 minutes of delay
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
         TunnelReject.rejected = TunnelDif
@@ -790,7 +792,7 @@ client1.on('connect', function(err) {
         fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
         WrapperReject.rejected = WrapperDif
         fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
-      }
+        }
       setTimeout(getRejects, 60000);
       var storeReject = setInterval(getRejects, 1740000);
 
