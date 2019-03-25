@@ -1,185 +1,291 @@
 var fs = require('fs');
 var modbus = require('jsmodbus');
 var PubNub = require('pubnub');
-try {
-  var secPubNub = 0;
-  var Tunnelct = null,
-    Tunnelresults = null,
-    CntInTunnel = null,
-    CntInTunnel20 = 0,
-    CntOutTunnel = null,
-    CntOutTunnel1 = null,
-    Tunnelactual = 0,
-    Tunneltime = 0,
-    Tunnelsec = 0,
-    TunnelflagStopped = false,
-    Tunnelstate = 0,
-    Tunnelspeed = 0,
-    TunnelspeedTemp = 0,
-    TunnelflagPrint = 0,
-    TunnelsecStop = 0,
-    TunnelONS = false,
-    TunneltimeStop = 60, //NOTE: Timestop en segundos
-    TunnelWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-    TunnelflagRunning = false,
-    CntInTunnel1 = null,
-    TunneldeltaRejected = null,
-    TunnelRejectFlag = false,
-    TunnelReject,
-    TunnelVerify = (function(){
+try{
+  var secPubNub=0;
+  var Fillerct = null,
+      Fillerresults = null,
+      CntInFiller = null,
+      CntOutFiller = null,
+      Filleractual = 0,
+      Fillertime = 0,
+      Fillersec = 0,
+      FillerflagStopped = false,
+      Fillerstate = 0,
+      Fillerspeed = 0,
+      FillerspeedTemp = 0,
+      FillerflagPrint = 0,
+      FillersecStop = 0,
+      FillerdeltaRejected = null,
+      FillerONS = false,
+      FillertimeStop = 60, //NOTE: Timestop
+      FillerWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+      FillerflagRunning = false,
+      FillerRejectFlag = false,
+      FillerReject,
+      FillerVerify = (function(){
         try{
-          TunnelReject = fs.readFileSync('TunnelRejected.json')
-          if(TunnelReject.toString().indexOf('}') > 0 && TunnelReject.toString().indexOf('{\"rejected\":') != -1){
-            TunnelReject = JSON.parse(TunnelReject)
+          FillerReject = fs.readFileSync('FillerRejected.json')
+          if(FillerReject.toString().indexOf('}') > 0 && FillerReject.toString().indexOf('{\"rejected\":') != -1){
+            FillerReject = JSON.parse(FillerReject)
           }else{
             throw 12121212
           }
         }catch(err){
           if(err.code == 'ENOENT' || err == 12121212){
-            fs.writeFileSync('TunnelRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
-            TunnelReject = {
+            fs.writeFileSync('FillerRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+            FillerReject = {
               rejected : 0
             }
           }
         }
-  })();
-  var Filler1ct = null,
-    Filler1results = null,
-    CntInFiller1 = null,
-    CntOutFiller1 = null,
-    Filler1actual = 0,
-    Filler1time = 0,
-    Filler1sec = 0,
-    Filler1flagStopped = false,
-    Filler1state = 0,
-    Filler1speed = 0,
-    Filler1speedTemp = 0,
-    Filler1flagPrint = 0,
-    Filler1secStop = 0,
-    Filler1ONS = false,
-    Filler1timeStop = 60, //NOTE: Timestop en segundos
-    Filler1Worktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-    Filler1flagRunning = false;
-  var Filler2ct = null,
-    Filler2results = null,
-    CntInFiller2 = null,
-    CntOutFiller2 = null,
-    Filler2actual = 0,
-    Filler2time = 0,
-    Filler2sec = 0,
-    Filler2flagStopped = false,
-    Filler2state = 0,
-    Filler2speed = 0,
-    Filler2speedTemp = 0,
-    Filler2flagPrint = 0,
-    Filler2secStop = 0,
-    Filler2ONS = false,
-    Filler2timeStop = 60, //NOTE: Timestop en segundos
-    Filler2Worktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-    Filler2flagRunning = false;
-  var Wrapping1ct = null,
-    Wrapping1results = null,
-    Xray1results = null,
-    CntInWrapping1 = null,
-    CntOutWrapping1 = null,
-    Wrapping1actual = 0,
-    Wrapping1time = 0,
-    Wrapping1sec = 0,
-    Wrapping1flagStopped = false,
-    Wrapping1state = 0,
-    Wrapping1speed = 0,
-    Wrapping1speedTemp = 0,
-    Wrapping1flagPrint = 0,
-    Wrapping1secStop = 0,
-    Wrapping1ONS = false,
-    Wrapping1timeStop = 60, //NOTE: Timestop en segundos
-    Wrapping1Worktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-    Wrapping1flagRunning = false;
-  var Wrapping2ct = null,
-    Wrapping2results = null,
-    Xray2results = null,
-    CntInWrapping2 = null,
-    CntOutWrapping2 = null,
-    Wrapping2actual = 0,
-    Wrapping2time = 0,
-    Wrapping2sec = 0,
-    Wrapping2flagStopped = false,
-    Wrapping2state = 0,
-    Wrapping2speed = 0,
-    Wrapping2speedTemp = 0,
-    Wrapping2flagPrint = 0,
-    Wrapping2secStop = 0,
-    Wrapping2ONS = false,
-    Wrapping2timeStop = 60, //NOTE: Timestop en segundos
-    Wrapping2Worktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
-    Wrapping2flagRunning = false;
-
-  var CntOutEOL = null,
-    secEOL = 0;
+      })()
+  var Coderct = null,
+      Coderresults = null,
+      CntInCoder = null,
+      CntOutCoder = null,
+      Coderactual = 0,
+      Codertime = 0,
+      Codersec = 0,
+      CoderflagStopped = false,
+      Coderstate = 0,
+      Coderspeed = 0,
+      CoderspeedTemp = 0,
+      CoderflagPrint = 0,
+      CodersecStop = 0,
+      CoderONS = false,
+      CoderdeltaRejected = null,
+      CodertimeStop = 60, //NOTE: Timestop en segundos
+      CoderWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+      CoderflagRunning = false,
+      CoderRejectFlag = false,
+      CoderReject,
+      CoderVerify = (function(){
+            try{
+              CoderReject = fs.readFileSync('CoderRejected.json')
+              if(CoderReject.toString().indexOf('}') > 0 && CoderReject.toString().indexOf('{\"rejected\":') != -1){
+                CoderReject = JSON.parse(CoderReject)
+              }else{
+                throw 12121212
+              }
+            }catch(err){
+              if(err.code == 'ENOENT' || err == 12121212){
+                fs.writeFileSync('CoderRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+                CoderReject = {
+                  rejected : 0
+                }
+              }
+            }
+          })();
+      var Xrayct = null,
+          Xrayresults = null,
+          CntInXray = null,
+          CntOutXray = null,
+          Xrayactual = 0,
+          Xraytime = 0,
+          Xraysec = 0,
+          XrayflagStopped = false,
+          Xraystate = 0,
+          Xrayspeed = 0,
+          XrayspeedTemp = 0,
+          XrayflagPrint = 0,
+          XraysecStop = 0,
+          XraydeltaRejected = null,
+          XrayONS = false,
+          XraytimeStop = 60, //NOTE: Timestop
+          XrayWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+          XrayflagRunning = false,
+          XrayRejectFlag = false,
+          XrayReject,
+          XrayVerify = (function(){
+            try{
+              XrayReject = fs.readFileSync('XrayRejected.json')
+              if(XrayReject.toString().indexOf('}') > 0 && XrayReject.toString().indexOf('{\"rejected\":') != -1){
+                XrayReject = JSON.parse(XrayReject)
+              }else{
+                throw 12121212
+              }
+            }catch(err){
+              if(err.code == 'ENOENT' || err == 12121212){
+                fs.writeFileSync('XrayRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+                XrayReject = {
+                  rejected : 0
+                }
+              }
+            }
+          })();
+  var Tunnelct = null,
+      Tunnelresults = null,
+      CntInTunnel = 0,
+      CntInTunnel30=0,
+      CntInTunnel60=0,
+      CntInTunnel90=0,
+      CntOutTunnel = null,
+      Tunnelactual = 0,
+      Tunneltime = 0,
+      Tunnelsec = 0,
+      TunnelflagStopped = false,
+      Tunnelstate = 0,
+      Tunnelspeed = 0,
+      TunnelspeedTemp = 0,
+      TunnelflagPrint = 0,
+      TunnelsecStop = 0,
+      TunnelONS = false,
+      TunneldeltaRejected = null,
+      TunneltimeStop = 60, //NOTE: Timestop en segundos
+      TunnelWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+      TunnelflagRunning = false,
+      TunnelRejectFlag = false,
+      TunnelReject,
+      TunnelVerify = (function(){
+          try{
+            TunnelReject = fs.readFileSync('TunnelRejected.json')
+            if(TunnelReject.toString().indexOf('}') > 0 && TunnelReject.toString().indexOf('{\"rejected\":') != -1){
+              TunnelReject = JSON.parse(TunnelReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('TunnelRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              TunnelReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
+  var Wrapperct = null,
+      Wrapperresults = null,
+      CntInWrapper = null,
+      CntOutWrapper = null,
+      Wrapperactual = 0,
+      Wrappertime = 0,
+      Wrappersec = 0,
+      WrapperflagStopped = false,
+      Wrapperstate = 0,
+      Wrapperspeed = 0,
+      WrapperspeedTemp = 0,
+      WrapperflagPrint = 0,
+      WrappersecStop = 0,
+      WrapperONS = false,
+      WrapperdeltaRejected = null,
+      WrappertimeStop = 60, //NOTE: Timestop en segundos
+      WrapperWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+      WrapperflagRunning = false,
+      CntBoxInWrapper = null,
+      WrapperRejectFlag = false,
+      WrapperReject,
+      WrapperVerify = (function(){
+          try{
+            WrapperReject = fs.readFileSync('WrapperRejected.json')
+            if(WrapperReject.toString().indexOf('}') > 0 && WrapperReject.toString().indexOf('{\"rejected\":') != -1){
+              WrapperReject = JSON.parse(WrapperReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('WrapperRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              WrapperReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
+  var Inverterct = null,
+      Inverterresults = null,
+      CntInInverter = null,
+      CntOutInverter = null,
+      Inverteractual = 0,
+      Invertertime = 0,
+      Invertersec = 0,
+      InverterflagStopped = false,
+      Inverterstate = 0,
+      Inverterspeed = 0,
+      InverterspeedTemp = 0,
+      InverterflagPrint = 0,
+      InvertersecStop = 0,
+      InverterONS = false,
+      InverterdeltaRejected = null,
+      InvertertimeStop = 60, //NOTE: Timestop en segundos
+      InverterWorktime = 0.99, //NOTE: Intervalo de tiempo en minutos para actualizar el log
+      InverterflagRunning = false,
+      InverterRejectFlag = false,
+      InverterReject,
+      InverterVerify = (function(){
+          try{
+            InverterReject = fs.readFileSync('InverterRejected.json')
+            if(InverterReject.toString().indexOf('}') > 0 && InverterReject.toString().indexOf('{\"rejected\":') != -1){
+              InverterReject = JSON.parse(InverterReject)
+            }else{
+              throw 12121212
+            }
+          }catch(err){
+            if(err.code == 'ENOENT' || err == 12121212){
+              fs.writeFileSync('InverterRejected.json','{"rejected":0}') //NOTE: Change the object to what it usually is.
+              InverterReject = {
+                rejected : 0
+              }
+            }
+          }
+        })();
+  var CntOutEOL=null,
+      secEOL=0;
   var publishConfig;
-  var intId1, intId2, intId3, intId4;
-  var files = fs.readdirSync("C:/PULSE/INTERBAKE_LOGS/"); //Leer documentos
-  var actualdate = Date.now(); //Fecha actual
-  var text2send = []; //Vector a enviar
-  var flagInfo2Send = 0;
-  var i = 0;
-  var pubnub = new PubNub({
-    publishKey: "pub-c-8d024e5b-23bc-4ce8-ab68-b39b00347dfb",
-    subscribeKey: "sub-c-c3b3aa54-b44b-11e7-895e-c6a8ff6a3d85",
-    uuid: "MEX_TUL_INTERBAKE"
-  });
+      var intId1,intId2,intId3;
+      var files = fs.readdirSync("C:/PULSE/COMET_LOGS/"); //Leer documentos
+      var actualdate = Date.now(); //Fecha actual
+      var text2send=[];//Vector a enviar
+      var flagInfo2Send=0;
+      var i=0;
+      var pubnub = new PubNub({
+        publishKey:		"pub-c-8d024e5b-23bc-4ce8-ab68-b39b00347dfb",
+      subscribeKey: 		"sub-c-c3b3aa54-b44b-11e7-895e-c6a8ff6a3d85",
+        uuid: "MEX_TUL_COMET"
+      });
 
 
-  var senderData = function() {
-    pubnub.publish(publishConfig, function(status, response) {});
-  };
+      var senderData = function (){
+        pubnub.publish(publishConfig, function(status, response) {
+      });};
 
-  var client1 = modbus.client.tcp.complete({
-    'host': "192.168.10.90",
-    'port': 502,
-    'autoReconnect': true,
-    'timeout': 60000,
-    'logEnabled': true,
-    'reconnectTimeout': 30000
-  });
-  var client2 = modbus.client.tcp.complete({
-    'host': "192.168.10.91",
-    'port': 502,
-    'autoReconnect': true,
-    'timeout': 60000,
-    'logEnabled': true,
-    'reconnectTimeout': 30000
-  });
-  var client3 = modbus.client.tcp.complete({
-    'host': "192.168.10.92",
-    'port': 502,
-    'autoReconnect': true,
-    'timeout': 60000,
-    'logEnabled': true,
-    'reconnectTimeout': 30000
-  });
-  var client4 = modbus.client.tcp.complete({
-    'host': "192.168.10.93",
-    'port': 502,
-    'autoReconnect': true,
-    'timeout': 60000,
-    'logEnabled': true,
-    'reconnectTimeout': 30000
-  });
-} catch (err) {
-  fs.appendFileSync("error_declarations.log", err + '\n');
+      var client1 = modbus.client.tcp.complete({
+        'host': "192.168.10.102",
+        'port': 502,
+        'autoReconnect': true,
+        'timeout': 60000,
+        'logEnabled': true,
+        'reconnectTimeout' : 30000
+      });
+      var client2 = modbus.client.tcp.complete({
+        'host': "192.168.10.103",
+        'port': 502,
+        'autoReconnect': true,
+        'timeout': 60000,
+        'logEnabled': true,
+        'reconnectTimeout' : 30000
+      });
+      var client3 = modbus.client.tcp.complete({
+        'host': "192.168.10.104",
+        'port': 502,
+        'autoReconnect': true,
+        'timeout': 60000,
+        'logEnabled': true,
+        'reconnectTimeout' : 30000
+      });
+}catch(err){
+    fs.appendFileSync("error_declarations.log",err + '\n');
 }
-try {
+try{
   client1.connect();
   client2.connect();
   client3.connect();
-  client4.connect();
-} catch (err) {
-  fs.appendFileSync("error_connection.log", err + '\n');
+}catch(err){
+  fs.appendFileSync("error_connection.log",err + '\n');
 }
-try {
+try{
   /*----------------------------------------------------------------------------------function-------------------------------------------------------------------------------------------*/
-  var joinWord = function(num1, num2) {
+  var joinWord=function(num1, num2) {
     var bits = "00000000000000000000000000000000";
     var bin1 = num1.toString(2),
       bin2 = num2.toString(2),
@@ -194,106 +300,235 @@ try {
     bits = newNum.join("");
     return parseInt(bits, 2);
   };
-  //PubNub --------------------------------------------------------------------------------------------------------------------
-  if (secPubNub >= 60 * 5) {
+//PubNub --------------------------------------------------------------------------------------------------------------------
+        if(secPubNub>=60*5){
 
-    var idle = function() {
-      i = 0;
-      text2send = [];
-      for (var k = 0; k < files.length; k++) { //Verificar los archivos
-        var stats = fs.statSync("C:/PULSE/INTERBAKE_LOGS/" + files[k]);
-        var mtime = new Date(stats.mtime).getTime();
-        if (mtime < (Date.now() - (3 * 60 * 1000)) && files[k].indexOf("serialbox") == -1) {
-          flagInfo2Send = 1;
-          text2send[i] = files[k];
-          i++;
+          var idle=function(){
+            i=0;
+            text2send=[];
+            for (var k=0;k<files.length;k++){//Verificar los archivos
+              var stats = fs.statSync("C:/PULSE/COMET_LOGS/"+files[k]);
+              var mtime = new Date(stats.mtime).getTime();
+              if (mtime< (Date.now() - (3*60*1000))&&files[k].indexOf("serialbox")==-1){
+                flagInfo2Send=1;
+                text2send[i]=files[k];
+                i++;
+              }
+            }
+          };
+          secPubNub=0;
+          publishConfig = {
+            channel : "MEX_TUL_Monitor",
+            message : {
+                  line: "COMET",
+                  tt: Date.now(),
+                  machines:text2send
+
+                }
+          };
+          senderData();
         }
-      }
-    };
-    secPubNub = 0;
-    publishConfig = {
-      channel: "MEX_TUL_Monitor",
-      message: {
-        line: "1",
-        tt: Date.now(),
-        machines: text2send
-
-      }
-    };
-    senderData();
-  }
-  secPubNub++;
-  //PubNub --------------------------------------------------------------------------------------------------------------------
-  client1.on('connect', function(err) {
-    intId1 =
-      setInterval(function() {
+        secPubNub++;
+//PubNub --------------------------------------------------------------------------------------------------------------------
+client1.on('connect', function(err) {
+  intId1 =
+    setInterval(function(){
         client1.readHoldingRegisters(0, 16).then(function(resp) {
-          CntInTunnel1 = joinWord(resp.register[0], resp.register[1]);
-          CntOutFiller1 = joinWord(resp.register[2], resp.register[3]);
-          //------------------------------------------Filler1----------------------------------------------
-          Filler1ct = CntOutFiller1 //CntOutFiller1 // NOTE: igualar al contador de salida
-          if (!Filler1ONS && Filler1ct) {
-            Filler1speedTemp = Filler1ct
-            Filler1sec = Date.now()
-            Filler1ONS = true
-            Filler1time = Date.now()
-          }
-          if (Filler1ct > Filler1actual) {
-            if (Filler1flagStopped) {
-              Filler1speed = Filler1ct - Filler1speedTemp
-              Filler1speedTemp = Filler1ct
-              Filler1sec = Date.now()
-              Filler1time = Date.now()
-            }
-            Filler1secStop = 0
-            Filler1state = 1
-            Filler1flagStopped = false
-            Filler1flagRunning = true
-          } else if (Filler1ct == Filler1actual) {
-            if (Filler1secStop == 0) {
-              Filler1time = Date.now()
-              Filler1secStop = Date.now()
-            }
-            if ((Date.now() - (Filler1timeStop * 1000)) >= Filler1secStop) {
-              Filler1speed = 0
-              Filler1state = 2
-              Filler1speedTemp = Filler1ct
-              Filler1flagStopped = true
-              Filler1flagRunning = false
-              Filler1flagPrint = 1
-            }
-          }
-          Filler1actual = Filler1ct
-          if (Date.now() - 60000 * Filler1Worktime >= Filler1sec && Filler1secStop == 0) {
-            if (Filler1flagRunning && Filler1ct) {
-              Filler1flagPrint = 1
-              Filler1secStop = 0
-              Filler1speed = Filler1ct - Filler1speedTemp
-              Filler1speedTemp = Filler1ct
-              Filler1sec = Date.now()
-            }
-          }
-          Filler1results = {
-            ST: Filler1state,
-            CPQO: CntOutFiller1,
-            SP: Filler1speed
-          }
-          if (Filler1flagPrint == 1) {
-            for (var key in Filler1results) {
-              if (Filler1results[key] != null && !isNaN(Filler1results[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Filler1_INTERBAKE.log', 'tt=' + Filler1time + ',var=' + key + ',val=' + Filler1results[key] + '\n')
-            }
-            Filler1flagPrint = 0
-            Filler1secStop = 0
-            Filler1time = Date.now()
-          }
-          //------------------------------------------Filler1----------------------------------------------
-        }); //Cierre de lectura
-      }, 1000);
-  }); //Cierre de cliente
+          CntInFiller =  joinWord(resp.register[0], resp.register[1]) + joinWord(resp.register[2], resp.register[3]) + joinWord(resp.register[4], resp.register[5]); //Physic Signal
+          CntOutFiller = joinWord(resp.register[6], resp.register[7]);  //Physic Signal
+          CntInCoder  = joinWord(resp.register[8], resp.register[9]);   //Physic Signal   
+          CntInXray = joinWord(resp.register[8], resp.register[9]);    
+          CntOutXray = joinWord(resp.register[10], resp.register[11]);   //Physic Signal
+          CntInTunnel = joinWord(resp.register[10], resp.register[11]);   //Mirror Signal
+          //------------------------------------------Filler----------------------------------------------
+                Fillerct = CntOutFiller // NOTE: igualar al contador de salida
+                if (!FillerONS && Fillerct) {
+                  FillerspeedTemp = Fillerct
+                  Fillersec = Date.now()
+                  FillerONS = true
+                  Fillertime = Date.now()
+                }
+                if(Fillerct > Filleractual){
+                  if(FillerflagStopped){
+                    Fillerspeed = Fillerct - FillerspeedTemp
+                    FillerspeedTemp = Fillerct
+                    Fillersec = Date.now()
+                    FillerdeltaRejected = null
+                    FillerRejectFlag = false
+                    Fillertime = Date.now()
+                  }
+                  FillersecStop = 0
+                  Fillerstate = 1
+                  FillerflagStopped = false
+                  FillerflagRunning = true
+                } else if( Fillerct == Filleractual ){
+                  if(FillersecStop == 0){
+                    Fillertime = Date.now()
+                    FillersecStop = Date.now()
+                  }
+                  if( ( Date.now() - ( FillertimeStop * 1000 ) ) >= FillersecStop ){
+                    Fillerspeed = 0
+                    Fillerstate = 2
+                    FillerspeedTemp = Fillerct
+                    FillerflagStopped = true
+                    FillerflagRunning = false
+                    FillerflagPrint = 1
+                  }
+                }
+                Filleractual = Fillerct
+                if(Date.now() - 60000 * FillerWorktime >= Fillersec && FillersecStop == 0){
+                  if(FillerflagRunning && Fillerct){
+                    FillerflagPrint = 1
+                    FillersecStop = 0
+                    Fillerspeed = Fillerct - FillerspeedTemp
+                    FillerspeedTemp = Fillerct
+                    Fillersec = Date.now()
+                  }
+                }
+                Fillerresults = {
+                  ST: Fillerstate,
+                  CPQI : CntInFiller,
+                  CPQO : CntOutFiller,
+                  SP: Fillerspeed
+                }
+                if (FillerflagPrint == 1) {
+                  for (var key in Fillerresults) {
+                    if( Fillerresults[key] != null && ! isNaN(Fillerresults[key]) )
+                    //NOTE: Cambiar path
+                    fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Fillertime + ',var=' + key + ',val=' + Fillerresults[key] + '\n')
+                  }
+                  FillerflagPrint = 0
+                  FillersecStop = 0
+                  Fillertime = Date.now()
+                }
+          //------------------------------------------Filler----------------------------------------------
+          //------------------------------------------Coder----------------------------------------------
+                Coderct = CntInCoder //NOTE: igualar al contador de salida
+                if (!CoderONS && Coderct) {
+                  CoderspeedTemp = Coderct
+                  Codersec = Date.now()
+                  CoderONS = true
+                  Codertime = Date.now()
+                }
+                if(Coderct > Coderactual){
+                  if(CoderflagStopped){
+                    Coderspeed = Coderct - CoderspeedTemp
+                    CoderspeedTemp = Coderct
+                    Codersec = Date.now()
+                    CoderdeltaRejected = null
+                    CoderRejectFlag = false
+                    Codertime = Date.now()
+                  }
+                  CodersecStop = 0
+                  Coderstate = 1
+                  CoderflagStopped = false
+                  CoderflagRunning = true
+                } else if( Coderct == Coderactual ){
+                  if(CodersecStop == 0){
+                    Codertime = Date.now()
+                    CodersecStop = Date.now()
+                  }
+                  if( ( Date.now() - ( CodertimeStop * 1000 ) ) >= CodersecStop ){
+                    //Coderspeed = 0
+                    Coderstate = 2
+                    CoderspeedTemp = Coderct
+                    CoderflagStopped = true
+                    CoderflagRunning = false
+                    CoderflagPrint = 1
+                  }
+                }
+                Coderactual = Coderct
+                if(Date.now() - 60000 * CoderWorktime >= Codersec && CodersecStop == 0){
+                  if(CoderflagRunning && Coderct){
+                    CoderflagPrint = 1
+                    CodersecStop = 0
+                    Coderspeed = Coderct - CoderspeedTemp
+                    CoderspeedTemp = Coderct
+                    Codersec = Date.now()
+                  }
+                }
+                Coderresults = {
+                  ST: Coderstate,
+                  CPQI: CntInCoder,
+                  SP: Coderspeed
+                }
+                if (CoderflagPrint == 1) {
+                  for (var key in Coderresults) {
+                    if( Coderresults[key] != null && ! isNaN(Coderresults[key]) )
+                    //NOTE: Cambiar path
+                    fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Coder_comet.log', 'tt=' + Codertime + ',var=' + key + ',val=' + Coderresults[key] + '\n')
+                  }
+                  CoderflagPrint = 0
+                  CodersecStop = 0
+                  Codertime = Date.now()
+                }
+          //------------------------------------------Coder----------------------------------------------
+          //------------------------------------------Xray----------------------------------------------
+                Xrayct = CntOutXray // NOTE: igualar al contador de salida
+                if (!XrayONS && Xrayct) {
+                  XrayspeedTemp = Xrayct
+                  Xraysec = Date.now()
+                  XrayONS = true
+                  Xraytime = Date.now()
+                }
+                if(Xrayct > Xrayactual){
+                  if(XrayflagStopped){
+                    Xrayspeed = Xrayct - XrayspeedTemp
+                    XrayspeedTemp = Xrayct
+                    Xraysec = Date.now()
+                    XraydeltaRejected = null
+                    XrayRejectFlag = false
+                    Xraytime = Date.now()
+                  }
+                  XraysecStop = 0
+                  Xraystate = 1
+                  XrayflagStopped = false
+                  XrayflagRunning = true
+                } else if( Xrayct == Xrayactual ){
+                  if(XraysecStop == 0){
+                    Xraytime = Date.now()
+                    XraysecStop = Date.now()
+                  }
+                  if( ( Date.now() - ( XraytimeStop * 1000 ) ) >= XraysecStop ){
+                    //Xrayspeed = 0
+                    Xraystate = 2
+                    XrayspeedTemp = Xrayct
+                    XrayflagStopped = true
+                    XrayflagRunning = false
+                    XrayflagPrint = 1
+                  }
+                }
+                Xrayactual = Xrayct
+                if(Date.now() - 60000 * XrayWorktime >= Xraysec && XraysecStop == 0){
+                  if(XrayflagRunning && Xrayct){
+                    XrayflagPrint = 1
+                    XraysecStop = 0
+                    Xrayspeed = Xrayct - XrayspeedTemp
+                    XrayspeedTemp = Xrayct
+                    Xraysec = Date.now()
+                  }
+                }
+                Xrayresults = {
+                  ST: Xraystate,
+                  CPQO : CntOutXray,
+                  SP: Xrayspeed
+                }
+                if (XrayflagPrint == 1) {
+                  for (var key in Xrayresults) {
+                    if( Xrayresults[key] != null && ! isNaN(Xrayresults[key]) )
+                    //NOTE: Cambiar path
+                    fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Xray_comet.log', 'tt=' + Xraytime + ',var=' + key + ',val=' + Xrayresults[key] + '\n')
+                  }
+                  XrayflagPrint = 0
+                  XraysecStop = 0
+                  Xraytime = Date.now()
+                }
+          //------------------------------------------Xray----------------------------------------------
+        });//Cierre de lectura
+      },1000);
+  });//Cierre de cliente
 
-  client1.on('error', function(err) {
+  client1.on('error', function(err){
     clearInterval(intId1);
   });
   client1.on('close', function() {
@@ -301,335 +536,266 @@ try {
   });
   client2.on('connect', function(err) {
     intId2 =
-      setInterval(function() {
-        client2.readHoldingRegisters(0, 16).then(function(resp) {
-          CntInTunnel = joinWord(resp.register[0], resp.register[1]) + CntInTunnel1;
-          CntOutFiller2 = joinWord(resp.register[2], resp.register[3]);
-          //------------------------------------------Filler2----------------------------------------------
-          Filler2ct = CntOutFiller2 //CntOutFiller2 // NOTE: igualar al contador de salida
-          if (!Filler2ONS && Filler2ct) {
-            Filler2speedTemp = Filler2ct
-            Filler2sec = Date.now()
-            Filler2ONS = true
-            Filler2time = Date.now()
-          }
-          if (Filler2ct > Filler2actual) {
-            if (Filler2flagStopped) {
-              Filler2speed = Filler2ct - Filler2speedTemp
-              Filler2speedTemp = Filler2ct
-              Filler2sec = Date.now()
-              Filler2time = Date.now()
-            }
-            Filler2secStop = 0
-            Filler2state = 1
-            Filler2flagStopped = false
-            Filler2flagRunning = true
-          } else if (Filler2ct == Filler2actual) {
-            if (Filler2secStop == 0) {
-              Filler2time = Date.now()
-              Filler2secStop = Date.now()
-            }
-            if ((Date.now() - (Filler2timeStop * 1000)) >= Filler2secStop) {
-              Filler2speed = 0
-              Filler2state = 2
-              Filler2speedTemp = Filler2ct
-              Filler2flagStopped = true
-              Filler2flagRunning = false
-              Filler2flagPrint = 1
-            }
-          }
-          Filler2actual = Filler2ct
-          if (Date.now() - 60000 * Filler2Worktime >= Filler2sec && Filler2secStop == 0) {
-            if (Filler2flagRunning && Filler2ct) {
-              Filler2flagPrint = 1
-              Filler2secStop = 0
-              Filler2speed = Filler2ct - Filler2speedTemp
-              Filler2speedTemp = Filler2ct
-              Filler2sec = Date.now()
-            }
-          }
-          Filler2results = {
-            ST: Filler2state,
-            CPQO: CntOutFiller2,
-            SP: Filler2speed
-          }
-          if (Filler2flagPrint == 1) {
-            for (var key in Filler2results) {
-              if (Filler2results[key] != null && !isNaN(Filler2results[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Filler2_INTERBAKE.log', 'tt=' + Filler2time + ',var=' + key + ',val=' + Filler2results[key] + '\n')
-            }
-            Filler2flagPrint = 0
-            Filler2secStop = 0
-            Filler2time = Date.now()
-          }
-          //------------------------------------------Filler2----------------------------------------------
-        }); //Cierre de lectura
-      }, 1000);
-  }); //Cierre de cliente
+      setInterval(function(){
+          client2.readHoldingRegisters(0, 16).then(function(resp) {
+            CntOutTunnel =  joinWord(resp.register[0], resp.register[1]) //Physic Signal
+            //------------------------------------------Tunnel----------------------------------------------
+                  Tunnelct = CntOutTunnel // NOTE: igualar al contador de salida
+                  if (!TunnelONS && Tunnelct) {
+                    TunnelspeedTemp = Tunnelct
+                    Tunnelsec = Date.now()
+                    TunnelONS = true
+                    Tunneltime = Date.now()
+                  }
+                  if(Tunnelct > Tunnelactual){
+                    if(TunnelflagStopped){
+                      Tunnelspeed = Tunnelct - TunnelspeedTemp
+                      TunnelspeedTemp = Tunnelct
+                      Tunnelsec = Date.now()
+                      TunneldeltaRejected = null
+                      TunnelRejectFlag = false
+                      Tunneltime = Date.now()
+                    }
+                    TunnelsecStop = 0
+                    Tunnelstate = 1
+                    TunnelflagStopped = false
+                    TunnelflagRunning = true
+                  } else if( Tunnelct == Tunnelactual ){
+                    if(TunnelsecStop == 0){
+                      Tunneltime = Date.now()
+                      TunnelsecStop = Date.now()
+                    }
+                    if( ( Date.now() - ( TunneltimeStop * 1000 ) ) >= TunnelsecStop ){
+                      //Tunnelspeed = 0
+                      Tunnelstate = 2
+                      TunnelspeedTemp = Tunnelct
+                      TunnelflagStopped = true
+                      TunnelflagRunning = false
+                      TunnelflagPrint = 1
+                    }
+                  }
+                  Tunnelactual = Tunnelct
+                  if(Date.now() - 60000 * TunnelWorktime >= Tunnelsec && TunnelsecStop == 0){
+                    if(TunnelflagRunning && Tunnelct){
+                      TunnelflagPrint = 1
+                      TunnelsecStop = 0
+                      Tunnelspeed = Tunnelct - TunnelspeedTemp
+                      TunnelspeedTemp = Tunnelct
+                      Tunnelsec = Date.now()
+                    }
+                  }
+                  Tunnelresults = {
+                    ST: Tunnelstate,
+                    CPQI: CntInTunnel,
+                    CPQO: CntOutTunnel,
+                    SP: Tunnelspeed
+                  }
+                  if (TunnelflagPrint == 1) {
+                    for (var key in Tunnelresults) {
+                      if( Tunnelresults[key] != null && ! isNaN(Tunnelresults[key]) )
+                      //NOTE: Cambiar path
+                      fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Tunneltime + ',var=' + key + ',val=' + Tunnelresults[key] + '\n')
+                    }
+                    TunnelflagPrint = 0
+                    TunnelsecStop = 0
+                    Tunneltime = Date.now()
+                  }
+            //------------------------------------------Tunnel----------------------------------------------
 
-  client2.on('error', function(err) {
-    clearInterval(intId2);
-  });
-  client2.on('close', function() {
-    clearInterval(intId2);
-  });
-  client3.on('connect', function(err) {
-    intId3 =
-      setInterval(function() {
-        client3.readHoldingRegisters(0, 16).then(function(resp) {
-          CntOutEOL = joinWord(resp.register[0], resp.register[1]);
-          CntOutWrapping1 = joinWord(resp.register[2], resp.register[3]); //Xray1 In
-          CntInWrapping1 = joinWord(resp.register[4], resp.register[5]);  //Wrapping 1 In
-          CntOutTunnel1 = joinWord(resp.register[4], resp.register[5]); //new
-          //------------------------------------------Wrapping1----------------------------------------------
-          Wrapping1ct = CntOutWrapping1 // NOTE: igualar al contador de salida
-          if (!Wrapping1ONS && Wrapping1ct) {
-            Wrapping1speedTemp = Wrapping1ct
-            Wrapping1sec = Date.now()
-            Wrapping1ONS = true
-            Wrapping1time = Date.now()
-          }
-          if (Wrapping1ct > Wrapping1actual) {
-            if (Wrapping1flagStopped) {
-              Wrapping1speed = Wrapping1ct - Wrapping1speedTemp
-              Wrapping1speedTemp = Wrapping1ct
-              Wrapping1sec = Date.now()
-              Wrapping1time = Date.now()
-            }
-            Wrapping1secStop = 0
-            Wrapping1state = 1
-            Wrapping1flagStopped = false
-            Wrapping1flagRunning = true
-          } else if (Wrapping1ct == Wrapping1actual) {
-            if (Wrapping1secStop == 0) {
-              Wrapping1time = Date.now()
-              Wrapping1secStop = Date.now()
-            }
-            if ((Date.now() - (Wrapping1timeStop * 1000)) >= Wrapping1secStop) {
-              Wrapping1speed = 0
-              Wrapping1state = 2
-              Wrapping1speedTemp = Wrapping1ct
-              Wrapping1flagStopped = true
-              Wrapping1flagRunning = false
-              Wrapping1flagPrint = 1
-            }
-          }
-          Wrapping1actual = Wrapping1ct
-          if (Date.now() - 60000 * Wrapping1Worktime >= Wrapping1sec && Wrapping1secStop == 0) {
-            if (Wrapping1flagRunning && Wrapping1ct) {
-              Wrapping1flagPrint = 1
-              Wrapping1secStop = 0
-              Wrapping1speed = Wrapping1ct - Wrapping1speedTemp
-              Wrapping1speedTemp = Wrapping1ct
-              Wrapping1sec = Date.now()
-            }
-          }
-          Wrapping1results = {
-            ST: Wrapping1state,
-            CPQI: CntInWrapping1,
-            CPQO: CntOutWrapping1,
-            SP: Wrapping1speed
-          }
-          Xray1results = {
-            ST: Wrapping1state,
-            CPQO: CntOutWrapping1,
-            SP: Wrapping1speed
-          }
-          if (Wrapping1flagPrint == 1) {
-            for (var key in Wrapping1results) {
-              if (Wrapping1results[key] != null && !isNaN(Wrapping1results[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Wrapping1_INTERBAKE.log', 'tt=' + Wrapping1time + ',var=' + key + ',val=' + Wrapping1results[key] + '\n')
-            }
-            for (var key in Xray1results) {
-              if (Xray1results[key] != null && !isNaN(Xray1results[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Xray1_INTERBAKE.log', 'tt=' + Wrapping1time + ',var=' + key + ',val=' + Xray1results[key] + '\n')
-            }
-            Wrapping1flagPrint = 0
-            Wrapping1secStop = 0
-            Wrapping1time = Date.now()
-          }
-          //------------------------------------------Wrapping1----------------------------------------------
-          /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
-          if (secEOL >= 60 && CntOutEOL) {
-            fs.appendFileSync("C:/PULSE/INTERBAKE_LOGS/mex_tul_eol_INTERBAKE.log", "tt=" + Date.now() + ",var=EOL" + ",val=" + CntOutEOL + "\n");
-            secEOL = 0;
-          } else {
-            secEOL++;
-          }
-          /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
+          });//Cierre de lectura
+        },1000);
+    });//Cierre de cliente
 
-        }); //Cierre de lectura
-      }, 1000);
-  }); //Cierre de cliente
+    client2.on('error', function(err){
+      clearInterval(intId2);
+    });
+    client2.on('close', function() {
+      clearInterval(intId2);
+    });
+    client3.on('connect', function(err) {
+      intId3 =
+        setInterval(function(){
+            client3.readHoldingRegisters(0, 16).then(function(resp) {
+              CntInInverter = joinWord(resp.register[2], resp.register[3])    //Physic Signal
+              CntOutInverter = joinWord(resp.register[4], resp.register[5]) //Mirror Signal
+              CntInWrapper = joinWord(resp.register[4], resp.register[5]) //Physic Signal
+              CntBoxInWrapper = joinWord(resp.register[0], resp.register[1]) //Physic Signal
+              CntOutWrapper = joinWord(resp.register[6], resp.register[7])        //Mirror Signal
+              CntOutEOL = joinWord(resp.register[6], resp.register[7])        //Physic Signal
+               //------------------------------------------Inverter----------------------------------------------
+                    Inverterct = CntOutInverter // NOTE: igualar al contador de salida
+                    if (!InverterONS && Inverterct) {
+                      InverterspeedTemp = Inverterct
+                      Invertersec = Date.now()
+                      InverterONS = true
+                      Invertertime = Date.now()
+                    }
+                    if(Inverterct > Inverteractual){
+                      if(InverterflagStopped){
+                        Inverterspeed = Inverterct - InverterspeedTemp
+                        InverterspeedTemp = Inverterct
+                        Invertersec = Date.now()
+                        InverterdeltaRejected = null
+                        InverterRejectFlag = false
+                        Invertertime = Date.now()
+                      }
+                      InvertersecStop = 0
+                      Inverterstate = 1
+                      InverterflagStopped = false
+                      InverterflagRunning = true
+                    } else if( Inverterct == Inverteractual ){
+                      if(InvertersecStop == 0){
+                        Invertertime = Date.now()
+                        InvertersecStop = Date.now()
+                      }
+                      if( ( Date.now() - ( InvertertimeStop * 1000 ) ) >= InvertersecStop ){
+                        //Inverterspeed = 0
+                        Inverterstate = 2
+                        InverterspeedTemp = Inverterct
+                        InverterflagStopped = true
+                        InverterflagRunning = false
+                        InverterflagPrint = 1
+                      }
+                    }
+                    Inverteractual = Inverterct
+                    if(Date.now() - 60000 * InverterWorktime >= Invertersec && InvertersecStop == 0){
+                      if(InverterflagRunning && Inverterct){
+                        InverterflagPrint = 1
+                        InvertersecStop = 0
+                        Inverterspeed = Inverterct - InverterspeedTemp
+                        InverterspeedTemp = Inverterct
+                        Invertersec = Date.now()
+                      }
+                    }
+                    Inverterresults = {
+                      ST: Inverterstate,
+                      CPQI: CntInInverter,
+                      CPQO: CntOutInverter,
+                      SP: Inverterspeed
+                    }
+                    if (InverterflagPrint == 1) {
+                      for (var key in Inverterresults) {
+                        if( Inverterresults[key] != null && ! isNaN(Inverterresults[key]) )
+                        //NOTE: Cambiar path
+                        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Invertertime + ',var=' + key + ',val=' + Inverterresults[key] + '\n')
+                      }
+                      InverterflagPrint = 0
+                      InvertersecStop = 0
+                      Invertertime = Date.now()
+                    }
+              //------------------------------------------Inverter----------------------------------------------
+              //------------------------------------------Wrapper----------------------------------------------
+                    Wrapperct = CntOutWrapper // NOTE: igualar al contador de salida
+                    if (!WrapperONS && Wrapperct) {
+                      WrapperspeedTemp = Wrapperct
+                      Wrappersec = Date.now()
+                      WrapperONS = true
+                      Wrappertime = Date.now()
+                    }
+                    if(Wrapperct > Wrapperactual){
+                      if(WrapperflagStopped){
+                        Wrapperspeed = Wrapperct - WrapperspeedTemp
+                        WrapperspeedTemp = Wrapperct
+                        Wrappersec = Date.now()
+                        WrapperdeltaRejected = null
+                        WrapperRejectFlag = false
+                        Wrappertime = Date.now()
+                      }
+                      WrappersecStop = 0
+                      Wrapperstate = 1
+                      WrapperflagStopped = false
+                      WrapperflagRunning = true
+                    } else if( Wrapperct == Wrapperactual ){
+                      if(WrappersecStop == 0){
+                        Wrappertime = Date.now()
+                        WrappersecStop = Date.now()
+                      }
+                      if( ( Date.now() - ( WrappertimeStop * 1000 ) ) >= WrappersecStop ){
+                        //Wrapperspeed = 0
+                        Wrapperstate = 2
+                        WrapperspeedTemp = Wrapperct
+                        WrapperflagStopped = true
+                        WrapperflagRunning = false
+                        WrapperflagPrint = 1
+                      }
+                    }
+                    Wrapperactual = Wrapperct
+                    if(Date.now() - 60000 * WrapperWorktime >= Wrappersec && WrappersecStop == 0){
+                      if(WrapperflagRunning && Wrapperct){
+                        WrapperflagPrint = 1
+                        WrappersecStop = 0
+                        Wrapperspeed = Wrapperct - WrapperspeedTemp
+                        WrapperspeedTemp = Wrapperct
+                        Wrappersec = Date.now()
+                      }
+                    }
+                    Wrapperresults = {
+                      ST: Wrapperstate,
+                      CPQBI: CntInWrapper,
+                      CPQCI: CntBoxInWrapper,
+                      CPQO: CntOutWrapper,
+                      SP: Wrapperspeed
+                    }
+                    if (WrapperflagPrint == 1) {
+                      for (var key in Wrapperresults) {
+                        if( Wrapperresults[key] != null && ! isNaN(Wrapperresults[key]) )
+                        //NOTE: Cambiar path
+                        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Wrappertime + ',var=' + key + ',val=' + Wrapperresults[key] + '\n')
+                      }
+                      WrapperflagPrint = 0
+                      WrappersecStop = 0
+                      Wrappertime = Date.now()
+                    }
+              //------------------------------------------Wrapper----------------------------------------------
 
-  client3.on('error', function(err) {
-    clearInterval(intId3);
-  });
-  client3.on('close', function() {
-    clearInterval(intId3);
-  });
-  client4.on('connect', function(err) {
-    intId4 =
-      setInterval(function() {
-        client4.readHoldingRegisters(0, 16).then(function(resp) {
-          CntOutTunnel = joinWord(resp.register[0], resp.register[1])+ CntOutTunnel1 ;
-          CntInWrapping2 = joinWord(resp.register[0], resp.register[1]);
-          CntOutWrapping2 = joinWord(resp.register[2], resp.register[3]); //Xray 2 in
-          //------------------------------------------Tunnel----------------------------------------------
-          Tunnelct = CntOutTunnel // NOTE: igualar al contador de salida
-          if (!TunnelONS && Tunnelct) {
-            TunnelspeedTemp = Tunnelct
-            Tunnelsec = Date.now()
-            TunnelONS = true
-            Tunneltime = Date.now()
-          }
-          if (Tunnelct > Tunnelactual) {
-            if (TunnelflagStopped) {
-              Tunnelspeed = Tunnelct - TunnelspeedTemp
-              TunnelspeedTemp = Tunnelct
-              Tunnelsec = Date.now()
-              TunneldeltaRejected = null
-              TunnelRejectFlag = false
-              Tunneltime = Date.now()
-            }
-            TunnelsecStop = 0
-            Tunnelstate = 1
-            TunnelflagStopped = false
-            TunnelflagRunning = true
-          } else if (Tunnelct == Tunnelactual) {
-            if (TunnelsecStop == 0) {
-              Tunneltime = Date.now()
-              TunnelsecStop = Date.now()
-            }
-            if ((Date.now() - (TunneltimeStop * 1000)) >= TunnelsecStop) {
-              //Tunnelspeed = 0
-              Tunnelstate = 2
-              TunnelspeedTemp = Tunnelct
-              TunnelflagStopped = true
-              TunnelflagRunning = false
-              TunnelflagPrint = 1
-            }
-          }
-          Tunnelactual = Tunnelct
-          if (Date.now() - 60000 * TunnelWorktime >= Tunnelsec && TunnelsecStop == 0) {
-            if (TunnelflagRunning && Tunnelct) {
-              TunnelflagPrint = 1
-              TunnelsecStop = 0
-              Tunnelspeed = Tunnelct - TunnelspeedTemp
-              TunnelspeedTemp = Tunnelct
-              Tunnelsec = Date.now()
-            }
-          }
-          Tunnelresults = {
-            ST: Tunnelstate,
-            CPQI: CntInTunnel,
-            CPQO: CntOutTunnel,
-            SP: Tunnelspeed
-          }
-          if (TunnelflagPrint == 1) {
-            for (var key in Tunnelresults) {
-              if (Tunnelresults[key] != null && !isNaN(Tunnelresults[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Tunnel_INTERBAKE.log', 'tt=' + Tunneltime + ',var=' + key + ',val=' + Tunnelresults[key] + '\n')
-            }
-            TunnelflagPrint = 0
-            TunnelsecStop = 0
-            Tunneltime = Date.now()
-          }
-          //------------------------------------------Tunnel----------------------------------------------
-          //------------------------------------------Wrapping2----------------------------------------------
-          Wrapping2ct = CntOutWrapping2 // NOTE: igualar al contador de salida
-          if (!Wrapping2ONS && Wrapping2ct) {
-            Wrapping2speedTemp = Wrapping2ct
-            Wrapping2sec = Date.now()
-            Wrapping2ONS = true
-            Wrapping2time = Date.now()
-          }
-          if (Wrapping2ct > Wrapping2actual) {
-            if (Wrapping2flagStopped) {
-              Wrapping2speed = Wrapping2ct - Wrapping2speedTemp
-              Wrapping2speedTemp = Wrapping2ct
-              Wrapping2sec = Date.now()
-              Wrapping2time = Date.now()
-            }
-            Wrapping2secStop = 0
-            Wrapping2state = 1
-            Wrapping2flagStopped = false
-            Wrapping2flagRunning = true
-          } else if (Wrapping2ct == Wrapping2actual) {
-            if (Wrapping2secStop == 0) {
-              Wrapping2time = Date.now()
-              Wrapping2secStop = Date.now()
-            }
-            if ((Date.now() - (Wrapping2timeStop * 1000)) >= Wrapping2secStop) {
-              Wrapping2speed = 0
-              Wrapping2state = 2
-              Wrapping2speedTemp = Wrapping2ct
-              Wrapping2flagStopped = true
-              Wrapping2flagRunning = false
-              Wrapping2flagPrint = 1
-            }
-          }
-          Wrapping2actual = Wrapping2ct
-          if (Date.now() - 60000 * Wrapping2Worktime >= Wrapping2sec && Wrapping2secStop == 0) {
-            if (Wrapping2flagRunning && Wrapping2ct) {
-              Wrapping2flagPrint = 1
-              Wrapping2secStop = 0
-              Wrapping2speed = Wrapping2ct - Wrapping2speedTemp
-              Wrapping2speedTemp = Wrapping2ct
-              Wrapping2sec = Date.now()
-            }
-          }
-          Wrapping2results = {
-            ST: Wrapping2state,
-            CPQI: CntInWrapping2,
-            //CPQO: CntOutWrapping2,
-            SP: Wrapping2speed
-          }
-          Xray2results = {
-            ST: Wrapping2state,
-            CPQI: CntInWrapping2,
-            CPQO: CntOutWrapping2,
-            SP: Wrapping2speed
-          }
-          if (Wrapping2flagPrint == 1) {
-            for (var key in Wrapping2results) {
-              if (Wrapping2results[key] != null && !isNaN(Wrapping2results[key]))
-                //NOTE: Cambiar path
-                fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Wrapping2_INTERBAKE.log', 'tt=' + Wrapping2time + ',var=' + key + ',val=' + Wrapping2results[key] + '\n')
-            }
-            for (var key1 in Xray2results) {
-                if (Xray2results[key1] != null && !isNaN(Xray2results[key1]))
-                  //NOTE: Cambiar path
-                  fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Xray2_INTERBAKE.log', 'tt=' + Wrapping2time + ',var=' + key1 + ',val=' + Xray2results[key1] + '\n')
-              }
-            Wrapping2flagPrint = 0
-            Wrapping2secStop = 0
-            Wrapping2time = Date.now()
-          }
-          //------------------------------------------Wrapping2----------------------------------------------
-        }); //Cierre de lectura
-      }, 1000);
-  }); //Cierre de cliente
+              /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
+                   if(secEOL>=60 && CntOutEOL){
+                      fs.appendFileSync("C:/PULSE/COMET_LOGS/mex_tul_eol_comet.log","tt="+Date.now()+",var=EOL"+",val="+CntOutEOL+"\n");
+                      secEOL=0;
+                    }else{
+                      secEOL++;
+                    }
+              /*----------------------------------------------------------------------------------EOL----------------------------------------------------------------------------------*/
 
-  client4.on('error', function(err) {
-    clearInterval(intId4);
-  });
-  client4.on('close', function() {
-    clearInterval(intId4);
-  });
-  function getRejects() {
-    CntInTunnel20=CntInTunnel
-    var TunnelDif = CntInTunnel20 - CntOutTunnel
-    fs.appendFileSync('C:/Pulse/INTERBAKE_LOGS/mex_tul_Tunnel_INTERBAKE.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
-    TunnelReject.rejected = TunnelDif
-    fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
-  }
-  setTimeout(getRejects, 40000);
-  var storeReject = setInterval(getRejects, 1740000);
-} catch (err) {
-  fs.appendFileSync("error_interbake.log", err + '\n');
+            });//Cierre de lectura
+          },1000);
+      });//Cierre de cliente
+
+      client3.on('error', function(err){
+        clearInterval(intId3);
+      });
+      client3.on('close', function() {
+        clearInterval(intId3);
+      });
+
+      function getRejects() {
+        var FillerDif = CntInFiller - CntOutFiller
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Filler_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(FillerDif - FillerReject.rejected) + '\n')
+        FillerReject.rejected = FillerDif
+        fs.writeFileSync('FillerRejected.json', '{"rejected": ' + FillerReject.rejected + '}')
+        var XrayDif = CntInCoder - CntOutXray
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Xray_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(XrayDif - XrayReject.rejected) + '\n')
+        XrayReject.rejected = XrayDif
+        fs.writeFileSync('XrayRejected.json', '{"rejected": ' + XrayReject.rejected + '}')
+        CntInTunnel90=CntInTunnel60 
+        CntInTunnel60=CntInTunnel30 
+        CntInTunnel30=CntInTunnel 
+        var TunnelDif = CntInTunnel90 - CntOutTunnel //90 minutes of delay
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Tunnel_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(TunnelDif - TunnelReject.rejected) + '\n')
+        TunnelReject.rejected = TunnelDif
+        fs.writeFileSync('TunnelRejected.json', '{"rejected": ' + TunnelReject.rejected + '}')
+        var InverterDif = CntInInverter - CntOutInverter
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Inverter_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(InverterDif - InverterReject.rejected) + '\n')
+        InverterReject.rejected = InverterDif
+        fs.writeFileSync('InverterRejected.json', '{"rejected": ' + InverterReject.rejected + '}')
+        var WrapperDif = CntBoxInWrapper - CntOutWrapper
+        fs.appendFileSync('C:/Pulse/COMET_LOGS/mex_tul_Wrapper_comet.log', 'tt=' + Date.now() + ',var=CPQR,val=' + eval(WrapperDif - WrapperReject.rejected) + '\n')
+        WrapperReject.rejected = WrapperDif
+        fs.writeFileSync('WrapperRejected.json', '{"rejected": ' + WrapperReject.rejected + '}')
+        }
+      setTimeout(getRejects, 60000);
+      var storeReject = setInterval(getRejects, 1740000);
+
+}catch(err){
+    fs.appendFileSync("error_Comet.log",err + '\n');
 }
